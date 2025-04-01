@@ -13,12 +13,20 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
 import PersonIcon from '@mui/icons-material/Person';
 import StorefrontIcon from '@mui/icons-material/Storefront';
+import HomeIcon from '@mui/icons-material/Home';
+import InfoIcon from '@mui/icons-material/Info';
+import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices';
 
 // Components
 import DashboardLayout from '../../components/layout/DashboardLayout';
 
 // Dashboard sub-pages
 import Profile from './Profile';
+
+// Common pages
+import Home from '../common/Home';
+import Services from '../common/Services';
+import AboutUs from '../common/AboutUs';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -172,6 +180,11 @@ const VendorDashboard = () => {
         <Route path="/products" element={<Typography variant="h4">Products Page</Typography>} />
         <Route path="/orders" element={<Typography variant="h4">Orders Page</Typography>} />
         <Route path="/analytics" element={<Typography variant="h4">Analytics Page</Typography>} />
+        
+        {/* Common Pages */}
+        <Route path="/home" element={<Home />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/about" element={<AboutUs />} />
       </Routes>
     </DashboardLayout>
   );
