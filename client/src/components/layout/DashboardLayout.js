@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { logout } from '../../features/auth/authSlice';
 
 // Material UI imports
 import {
   AppBar,
   Box,
+  Button,
   CssBaseline,
   Divider,
   Drawer,
@@ -31,6 +32,9 @@ import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import SettingsIcon from '@mui/icons-material/Settings';
+import HomeIcon from '@mui/icons-material/Home';
+import InfoIcon from '@mui/icons-material/Info';
+import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices';
 
 const drawerWidth = 240;
 
@@ -113,9 +117,37 @@ const DashboardLayout = ({ children, title, menuItems }) => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 0, mr: 3 }}>
             {title}
           </Typography>
+          
+          {/* Navbar Links */}
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+            <Button
+              component={Link}
+              to={`/${userInfo.role}/home`}
+              sx={{ color: 'white', mx: 1 }}
+              startIcon={<HomeIcon />}
+            >
+              Home
+            </Button>
+            <Button
+              component={Link}
+              to={`/${userInfo.role}/services`}
+              sx={{ color: 'white', mx: 1 }}
+              startIcon={<MiscellaneousServicesIcon />}
+            >
+              Services
+            </Button>
+            <Button
+              component={Link}
+              to={`/${userInfo.role}/about`}
+              sx={{ color: 'white', mx: 1 }}
+              startIcon={<InfoIcon />}
+            >
+              About Us
+            </Button>
+          </Box>
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
