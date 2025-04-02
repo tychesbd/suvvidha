@@ -89,6 +89,31 @@ export const updateProfile = createAsyncThunk(
   }
 );
 
+// Change password
+export const changePassword = createAsyncThunk(
+  'auth/changePassword',
+  async (passwordData, thunkAPI) => {
+    try {
+      const token = thunkAPI.getState().auth.userInfo.token;
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      const response = await axios.put('/api/users/change-password', passwordData, config);
+      return response.data;
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 export const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -142,6 +167,18 @@ export const authSlice = createSlice({
         state.userInfo = action.payload;
       })
       .addCase(updateProfile.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
+      .addCase(changePassword.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(changePassword.fulfilled, (state) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+      })
+      .addCase(changePassword.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
