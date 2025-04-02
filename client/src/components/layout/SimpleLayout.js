@@ -68,6 +68,7 @@ const SimpleLayout = ({ children, title }) => {
         <Toolbar>
           <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 0, mr: 3 }}>
             <img src="/logo.svg" alt="Suvvidha Logo" height="40" />
+            {/* Title removed as requested */}
           </Box>
           
           {/* Navbar Links */}

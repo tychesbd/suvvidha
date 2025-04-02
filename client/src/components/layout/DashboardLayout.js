@@ -82,28 +82,38 @@ const DashboardLayout = ({ children, title, menuItems }) => {
   const drawer = (
     <div>
       <Toolbar>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <img src="/logo.svg" alt="Suvvidha Logo" height="40" style={{ marginRight: '10px' }} />
-          <Typography variant="h6" noWrap component="div">
-            Suvvidha
-          </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img src="/logo.svg" alt="Suvvidha Logo" height="40" />
         </Box>
       </Toolbar>
       <Divider />
       <List>
-        {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding onClick={() => {
-            navigate(item.path);
-            if (isMobile) {
-              setMobileOpen(false);
-            }
-          }}>
-            <ListItemButton>
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
+        {menuItems.map((item) => {
+          const isActive = location.pathname === item.path || 
+                         (item.path !== `/${userInfo.role}` && location.pathname.includes(item.path));
+          return (
+            <ListItem key={item.text} disablePadding onClick={() => {
+              navigate(item.path);
+              if (isMobile) {
+                setMobileOpen(false);
+              }
+            }}>
+              <ListItemButton 
+                sx={{
+                  bgcolor: isActive ? 'rgba(0, 0, 0, 0.08)' : 'transparent',
+                  borderLeft: isActive ? '4px solid' : 'none',
+                  borderColor: isActive ? 'primary.main' : 'transparent',
+                  pl: isActive ? 1.5 : 2
+                }}
+              >
+                <ListItemIcon sx={{ color: isActive ? 'primary.main' : 'inherit' }}>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText primary={item.text} sx={{ color: isActive ? 'primary.main' : 'inherit' }} />
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
       </List>
     </div>
   );
@@ -129,10 +139,7 @@ const DashboardLayout = ({ children, title, menuItems }) => {
             <MenuIcon />
           </IconButton>
           <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 0, mr: 3 }}>
-            <img src="/logo.svg" alt="Suvvidha Logo" height="40" style={{ marginRight: '10px' }} />
-            <Typography variant="h6" noWrap component="div">
-              {title}
-            </Typography>
+            {/* Title removed as requested */}
           </Box>
           
           {/* Navbar Links */}
