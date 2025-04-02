@@ -25,6 +25,7 @@ import SimpleLayout from '../../components/layout/SimpleLayout';
 
 // Dashboard sub-pages
 import Profile from './Profile';
+import AdminServices from './Services';
 
 // Common pages
 import Home from '../common/Home';
@@ -170,7 +171,7 @@ const AdminDashboard = () => {
     {
       text: 'Services',
       icon: <MiscellaneousServicesIcon />,
-      path: '/admin/products',
+      path: '/admin/services',
     },
     {
       text: 'Bookings',
@@ -207,9 +208,9 @@ const AdminDashboard = () => {
           <Typography variant="h4">Users Management</Typography>
         </DashboardLayout>
       } />
-      <Route path="/products" element={
+      <Route path="/services" element={
         <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
-          <Typography variant="h4">Products Management</Typography>
+          <AdminServices />
         </DashboardLayout>
       } />
       <Route path="/orders" element={
