@@ -16,6 +16,8 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 
 // Components
 import DashboardLayout from '../../components/layout/DashboardLayout';
@@ -78,13 +80,13 @@ const AdminHome = () => {
           <StatsCard title="Users" value="42" icon={<PeopleIcon fontSize="large" />} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Orders" value="156" icon={<ShoppingCartIcon fontSize="large" />} />
+          <StatsCard title="Bookings" value="156" icon={<CalendarTodayIcon fontSize="large" />} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Categories" value="18" icon={<CategoryIcon fontSize="large" />} />
+          <StatsCard title="Services" value="18" icon={<MiscellaneousServicesIcon fontSize="large" />} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Vendors" value="12" icon={<PeopleIcon fontSize="large" />} />
+          <StatsCard title="Vendors" value="12" icon={<StorefrontIcon fontSize="large" />} />
         </Grid>
       </Grid>
 
@@ -166,18 +168,18 @@ const AdminDashboard = () => {
       path: '/admin/users',
     },
     {
-      text: 'Products',
-      icon: <CategoryIcon />,
+      text: 'Services',
+      icon: <MiscellaneousServicesIcon />,
       path: '/admin/products',
     },
     {
-      text: 'Orders',
-      icon: <ShoppingCartIcon />,
+      text: 'Bookings',
+      icon: <CalendarTodayIcon />,
       path: '/admin/orders',
     },
     {
-      text: 'Settings',
-      icon: <SettingsIcon />,
+      text: 'Vendors',
+      icon: <StorefrontIcon />,
       path: '/admin/settings',
     },
     {
