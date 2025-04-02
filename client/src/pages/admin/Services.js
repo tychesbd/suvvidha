@@ -25,7 +25,8 @@ import {
   Avatar,
   Tooltip,
   Snackbar,
-  Alert
+  Alert,
+  CircularProgress
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -35,6 +36,8 @@ import {
   Save as SaveIcon,
   Upload as UploadIcon
 } from '@mui/icons-material';
+import { useDispatch, useSelector } from 'react-redux';
+import { getServices, createService, updateService, deleteService, reset } from '../../features/services/serviceSlice';
 
 // Sample categories for dropdown
 const categories = [
@@ -49,8 +52,8 @@ const categories = [
   'Other'
 ];
 
-// Sample initial services data (would come from API in real app)
-const initialServices = [
+// Fallback services in case API fails
+const fallbackServices = [
   {
     id: 1,
     name: 'Home Cleaning',
@@ -75,34 +78,13 @@ const initialServices = [
     description: 'Reliable electrical services for your home and office.',
     image: 'https://source.unsplash.com/random/300x200/?electrical',
   },
-  {
-    id: 4,
-    name: 'Painting',
-    category: 'Painting',
-    minPrice: 1999,
-    description: 'Transform your space with our professional painting services.',
-    image: 'https://source.unsplash.com/random/300x200/?painting',
-  },
-  {
-    id: 5,
-    name: 'Carpentry',
-    category: 'Carpentry',
-    minPrice: 599,
-    description: 'Custom carpentry solutions for your furniture and woodwork needs.',
-    image: 'https://source.unsplash.com/random/300x200/?carpentry',
-  },
-  {
-    id: 6,
-    name: 'Gardening',
-    category: 'Gardening',
-    minPrice: 349,
-    description: 'Professional gardening services to keep your outdoor space beautiful.',
-    image: 'https://source.unsplash.com/random/300x200/?gardening',
-  },
 ];
 
 const AdminServices = () => {
-  const [services, setServices] = useState(initialServices);
+  const dispatch = useDispatch();
+  const { services: apiServices, isLoading, isSuccess, isError, message } = useSelector((state) => state.services);
+  
+  const [services, setServices] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [currentService, setCurrentService] = useState(null);
@@ -112,6 +94,40 @@ const AdminServices = () => {
     message: '',
     severity: 'success'
   });
+  
+  // Fetch services when component mounts
+  useEffect(() => {
+    dispatch(getServices());
+    
+    return () => {
+      dispatch(reset());
+    };
+  }, [dispatch]);
+  
+  // Update local state when API data changes
+  useEffect(() => {
+    if (apiServices && apiServices.length > 0) {
+      setServices(apiServices);
+    } else if (isError && message) {
+      setSnackbar({
+        open: true,
+        message: message,
+        severity: 'error'
+      });
+      setServices(fallbackServices);
+    }
+  }, [apiServices, isError, message]);
+  
+  // Show success messages
+  useEffect(() => {
+    if (isSuccess && message) {
+      setSnackbar({
+        open: true,
+        message: message,
+        severity: 'success'
+      });
+    }
+  }, [isSuccess, message]);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -153,7 +169,8 @@ const AdminServices = () => {
       category: service.category,
       minPrice: service.minPrice,
       description: service.description,
-      image: service.image
+      image: service.image,
+      isActive: service.isActive !== undefined ? service.isActive : true
     });
     setOpenDialog(true);
   };
@@ -184,28 +201,13 @@ const AdminServices = () => {
 
     if (isEditing && currentService) {
       // Update existing service
-      const updatedServices = services.map(service => 
-        service.id === currentService.id ? { ...service, ...formData } : service
-      );
-      setServices(updatedServices);
-      setSnackbar({
-        open: true,
-        message: 'Service updated successfully',
-        severity: 'success'
-      });
+      dispatch(updateService({
+        id: currentService._id,
+        serviceData: formData
+      }));
     } else {
-      // Add new service with auto-generated ID
-      const newId = Math.max(...services.map(service => service.id), 0) + 1;
-      const newService = {
-        id: newId,
-        ...formData
-      };
-      setServices([...services, newService]);
-      setSnackbar({
-        open: true,
-        message: 'Service added successfully',
-        severity: 'success'
-      });
+      // Add new service
+      dispatch(createService(formData));
     }
 
     handleCloseDialog();
@@ -214,13 +216,7 @@ const AdminServices = () => {
   // Delete service
   const handleDelete = () => {
     if (currentService) {
-      const filteredServices = services.filter(service => service.id !== currentService.id);
-      setServices(filteredServices);
-      setSnackbar({
-        open: true,
-        message: 'Service deleted successfully',
-        severity: 'success'
-      });
+      dispatch(deleteService(currentService._id));
       setOpenDeleteDialog(false);
     }
   };
@@ -248,6 +244,15 @@ const AdminServices = () => {
     });
   };
 
+  // Show loading spinner while fetching data
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -259,6 +264,7 @@ const AdminServices = () => {
           color="primary"
           startIcon={<AddIcon />}
           onClick={handleAddNew}
+          disabled={isLoading}
         >
           Add New Service
         </Button>
@@ -278,37 +284,43 @@ const AdminServices = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {services.map((service) => (
-              <TableRow key={service.id}>
-                <TableCell>{service.id}</TableCell>
-                <TableCell>
-                  <Avatar
-                    src={service.image}
-                    alt={service.name}
-                    variant="rounded"
-                    sx={{ width: 60, height: 60 }}
-                  />
-                </TableCell>
-                <TableCell>{service.name}</TableCell>
-                <TableCell>{service.category}</TableCell>
-                <TableCell>₹{service.minPrice}</TableCell>
-                <TableCell sx={{ maxWidth: 250 }}>
-                  <Typography noWrap>{service.description}</Typography>
-                </TableCell>
-                <TableCell align="center">
-                  <Tooltip title="Edit">
-                    <IconButton color="primary" onClick={() => handleEdit(service)}>
-                      <EditIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Delete">
-                    <IconButton color="error" onClick={() => handleDeleteConfirm(service)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
-                </TableCell>
+            {services.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center">No services found</TableCell>
               </TableRow>
-            ))}
+            ) : (
+              services.map((service) => (
+                <TableRow key={service._id || service.id}>
+                  <TableCell>{service._id || service.id}</TableCell>
+                  <TableCell>
+                    <Avatar
+                      src={service.image}
+                      alt={service.name}
+                      variant="rounded"
+                      sx={{ width: 60, height: 60 }}
+                    />
+                  </TableCell>
+                  <TableCell>{service.name}</TableCell>
+                  <TableCell>{service.category}</TableCell>
+                  <TableCell>₹{service.minPrice}</TableCell>
+                  <TableCell sx={{ maxWidth: 250 }}>
+                    <Typography noWrap>{service.description}</Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Tooltip title="Edit">
+                      <IconButton color="primary" onClick={() => handleEdit(service)} disabled={isLoading}>
+                        <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete">
+                      <IconButton color="error" onClick={() => handleDeleteConfirm(service)} disabled={isLoading}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
