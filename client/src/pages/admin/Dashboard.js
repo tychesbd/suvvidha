@@ -16,9 +16,12 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 
 // Components
 import DashboardLayout from '../../components/layout/DashboardLayout';
+import SimpleLayout from '../../components/layout/SimpleLayout';
 
 // Dashboard sub-pages
 import Profile from './Profile';
@@ -77,13 +80,13 @@ const AdminHome = () => {
           <StatsCard title="Users" value="42" icon={<PeopleIcon fontSize="large" />} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Orders" value="156" icon={<ShoppingCartIcon fontSize="large" />} />
+          <StatsCard title="Bookings" value="156" icon={<CalendarTodayIcon fontSize="large" />} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Categories" value="18" icon={<CategoryIcon fontSize="large" />} />
+          <StatsCard title="Services" value="18" icon={<MiscellaneousServicesIcon fontSize="large" />} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Vendors" value="12" icon={<PeopleIcon fontSize="large" />} />
+          <StatsCard title="Vendors" value="12" icon={<StorefrontIcon fontSize="large" />} />
         </Grid>
       </Grid>
 
@@ -165,18 +168,18 @@ const AdminDashboard = () => {
       path: '/admin/users',
     },
     {
-      text: 'Products',
-      icon: <CategoryIcon />,
+      text: 'Services',
+      icon: <MiscellaneousServicesIcon />,
       path: '/admin/products',
     },
     {
-      text: 'Orders',
-      icon: <ShoppingCartIcon />,
+      text: 'Bookings',
+      icon: <CalendarTodayIcon />,
       path: '/admin/orders',
     },
     {
-      text: 'Settings',
-      icon: <SettingsIcon />,
+      text: 'Vendors',
+      icon: <StorefrontIcon />,
       path: '/admin/settings',
     },
     {
@@ -187,21 +190,56 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
-      <Routes>
-        <Route path="/" element={<AdminHome />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/users" element={<Typography variant="h4">Users Management</Typography>} />
-        <Route path="/products" element={<Typography variant="h4">Products Management</Typography>} />
-        <Route path="/orders" element={<Typography variant="h4">Orders Management</Typography>} />
-        <Route path="/settings" element={<Typography variant="h4">System Settings</Typography>} />
-        
-        {/* Common Pages */}
-        <Route path="/home" element={<Home />} />
-        <Route path="/services" element={<Services />} />
-        <Route path="/about" element={<AboutUs />} />
-      </Routes>
-    </DashboardLayout>
+    <Routes>
+      {/* Dashboard Pages - with sidebar */}
+      <Route path="/" element={
+        <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
+          <AdminHome />
+        </DashboardLayout>
+      } />
+      <Route path="/profile" element={
+        <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
+          <Profile />
+        </DashboardLayout>
+      } />
+      <Route path="/users" element={
+        <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
+          <Typography variant="h4">Users Management</Typography>
+        </DashboardLayout>
+      } />
+      <Route path="/products" element={
+        <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
+          <Typography variant="h4">Products Management</Typography>
+        </DashboardLayout>
+      } />
+      <Route path="/orders" element={
+        <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
+          <Typography variant="h4">Orders Management</Typography>
+        </DashboardLayout>
+      } />
+      <Route path="/settings" element={
+        <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
+          <Typography variant="h4">System Settings</Typography>
+        </DashboardLayout>
+      } />
+      
+      {/* Common Pages - without sidebar */}
+      <Route path="/home" element={
+        <SimpleLayout title="Home">
+          <Home />
+        </SimpleLayout>
+      } />
+      <Route path="/services" element={
+        <SimpleLayout title="Services">
+          <Services />
+        </SimpleLayout>
+      } />
+      <Route path="/about" element={
+        <SimpleLayout title="About Us">
+          <AboutUs />
+        </SimpleLayout>
+      } />
+    </Routes>
   );
 };
 

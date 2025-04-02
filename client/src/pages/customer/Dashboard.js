@@ -18,6 +18,7 @@ import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices
 
 // Components
 import DashboardLayout from '../../components/layout/DashboardLayout';
+import SimpleLayout from '../../components/layout/SimpleLayout';
 
 // Dashboard sub-pages
 import Profile from './Profile';
@@ -167,19 +168,46 @@ const CustomerDashboard = () => {
   ];
 
   return (
-    <DashboardLayout title="Customer Dashboard" menuItems={menuItems}>
-      <Routes>
-        <Route path="/" element={<CustomerHome />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/orders" element={<Typography variant="h4">Orders Page</Typography>} />
-        <Route path="/wishlist" element={<Typography variant="h4">Wishlist Page</Typography>} />
-        
-        {/* Common Pages */}
-        <Route path="/home" element={<Home />} />
-        <Route path="/services" element={<Services />} />
-        <Route path="/about" element={<AboutUs />} />
-      </Routes>
-    </DashboardLayout>
+    <Routes>
+      {/* Dashboard Pages - with sidebar */}
+      <Route path="/" element={
+        <DashboardLayout title="Customer Dashboard" menuItems={menuItems}>
+          <CustomerHome />
+        </DashboardLayout>
+      } />
+      <Route path="/profile" element={
+        <DashboardLayout title="Customer Dashboard" menuItems={menuItems}>
+          <Profile />
+        </DashboardLayout>
+      } />
+      <Route path="/orders" element={
+        <DashboardLayout title="Customer Dashboard" menuItems={menuItems}>
+          <Typography variant="h4">Orders Page</Typography>
+        </DashboardLayout>
+      } />
+      <Route path="/wishlist" element={
+        <DashboardLayout title="Customer Dashboard" menuItems={menuItems}>
+          <Typography variant="h4">Wishlist Page</Typography>
+        </DashboardLayout>
+      } />
+      
+      {/* Common Pages - without sidebar */}
+      <Route path="/home" element={
+        <SimpleLayout title="Home">
+          <Home />
+        </SimpleLayout>
+      } />
+      <Route path="/services" element={
+        <SimpleLayout title="Services">
+          <Services />
+        </SimpleLayout>
+      } />
+      <Route path="/about" element={
+        <SimpleLayout title="About Us">
+          <AboutUs />
+        </SimpleLayout>
+      } />
+    </Routes>
   );
 };
 

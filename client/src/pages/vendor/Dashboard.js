@@ -19,6 +19,7 @@ import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices
 
 // Components
 import DashboardLayout from '../../components/layout/DashboardLayout';
+import SimpleLayout from '../../components/layout/SimpleLayout';
 
 // Dashboard sub-pages
 import Profile from './Profile';
@@ -173,20 +174,51 @@ const VendorDashboard = () => {
   ];
 
   return (
-    <DashboardLayout title="Vendor Dashboard" menuItems={menuItems}>
-      <Routes>
-        <Route path="/" element={<VendorHome />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/products" element={<Typography variant="h4">Products Page</Typography>} />
-        <Route path="/orders" element={<Typography variant="h4">Orders Page</Typography>} />
-        <Route path="/analytics" element={<Typography variant="h4">Analytics Page</Typography>} />
-        
-        {/* Common Pages */}
-        <Route path="/home" element={<Home />} />
-        <Route path="/services" element={<Services />} />
-        <Route path="/about" element={<AboutUs />} />
-      </Routes>
-    </DashboardLayout>
+    <Routes>
+      {/* Dashboard Pages - with sidebar */}
+      <Route path="/" element={
+        <DashboardLayout title="Vendor Dashboard" menuItems={menuItems}>
+          <VendorHome />
+        </DashboardLayout>
+      } />
+      <Route path="/profile" element={
+        <DashboardLayout title="Vendor Dashboard" menuItems={menuItems}>
+          <Profile />
+        </DashboardLayout>
+      } />
+      <Route path="/products" element={
+        <DashboardLayout title="Vendor Dashboard" menuItems={menuItems}>
+          <Typography variant="h4">Products Page</Typography>
+        </DashboardLayout>
+      } />
+      <Route path="/orders" element={
+        <DashboardLayout title="Vendor Dashboard" menuItems={menuItems}>
+          <Typography variant="h4">Orders Page</Typography>
+        </DashboardLayout>
+      } />
+      <Route path="/analytics" element={
+        <DashboardLayout title="Vendor Dashboard" menuItems={menuItems}>
+          <Typography variant="h4">Analytics Page</Typography>
+        </DashboardLayout>
+      } />
+      
+      {/* Common Pages - without sidebar */}
+      <Route path="/home" element={
+        <SimpleLayout title="Home">
+          <Home />
+        </SimpleLayout>
+      } />
+      <Route path="/services" element={
+        <SimpleLayout title="Services">
+          <Services />
+        </SimpleLayout>
+      } />
+      <Route path="/about" element={
+        <SimpleLayout title="About Us">
+          <AboutUs />
+        </SimpleLayout>
+      } />
+    </Routes>
   );
 };
 

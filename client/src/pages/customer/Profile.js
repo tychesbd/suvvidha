@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateProfile, reset } from '../../features/auth/authSlice';
 import { toast } from 'react-toastify';
+import ChangePasswordForm from '../../components/forms/ChangePasswordForm';
 
 // Material UI imports
 import {
@@ -248,6 +249,9 @@ const Profile = () => {
               </Box>
             )}
           </Paper>
+          
+          {/* Add Change Password Form */}
+          <ChangePasswordForm />
         </Grid>
       </Grid>
     </Box>

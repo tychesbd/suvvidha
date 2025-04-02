@@ -9,50 +9,32 @@ import {
   Box,
   Button,
   CssBaseline,
-  Divider,
-  Drawer,
-  IconButton,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   Toolbar,
   Typography,
   Avatar,
   Menu,
   MenuItem,
   Tooltip,
-  useMediaQuery,
-  useTheme,
+  IconButton,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
 
 // Icons
-import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-// Removing unused SettingsIcon import
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices';
 
-const drawerWidth = 240;
-
-const DashboardLayout = ({ children, title, menuItems }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [mobileOpen, setMobileOpen] = useState(false);
+const SimpleLayout = ({ children, title }) => {
   const [anchorElUser, setAnchorElUser] = useState(null);
-  const location = useLocation();
 
   const { userInfo } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
+  const location = useLocation();
 
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
@@ -79,66 +61,13 @@ const DashboardLayout = ({ children, title, menuItems }) => {
     navigate(`/${userInfo.role}`);
   };
 
-  const drawer = (
-    <div>
-      <Toolbar>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <img src="/logo.svg" alt="Suvvidha Logo" height="40" />
-        </Box>
-      </Toolbar>
-      <Divider />
-      <List>
-        {menuItems.map((item) => {
-          const isActive = location.pathname === item.path || 
-                         (item.path !== `/${userInfo.role}` && location.pathname.includes(item.path));
-          return (
-            <ListItem key={item.text} disablePadding onClick={() => {
-              navigate(item.path);
-              if (isMobile) {
-                setMobileOpen(false);
-              }
-            }}>
-              <ListItemButton 
-                sx={{
-                  bgcolor: isActive ? 'rgba(0, 0, 0, 0.08)' : 'transparent',
-                  borderLeft: isActive ? '4px solid' : 'none',
-                  borderColor: isActive ? 'primary.main' : 'transparent',
-                  pl: isActive ? 1.5 : 2
-                }}
-              >
-                <ListItemIcon sx={{ color: isActive ? 'primary.main' : 'inherit' }}>
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText primary={item.text} sx={{ color: isActive ? 'primary.main' : 'inherit' }} />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
-      </List>
-    </div>
-  );
-
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar
-        position="fixed"
-        sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
-        }}
-      >
+      <AppBar position="fixed">
         <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
-          >
-            <MenuIcon />
-          </IconButton>
           <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 0, mr: 3 }}>
+            <img src="/logo.svg" alt="Suvvidha Logo" height="40" />
             {/* Title removed as requested */}
           </Box>
           
@@ -213,60 +142,30 @@ const DashboardLayout = ({ children, title, menuItems }) => {
                 <ListItemIcon>
                   <AccountCircleIcon fontSize="small" />
                 </ListItemIcon>
-                <Typography textAlign="center">Profile</Typography>
+                <ListItemText primary="Profile" />
               </MenuItem>
               <MenuItem onClick={handleDashboardClick}>
                 <ListItemIcon>
                   <DashboardIcon fontSize="small" />
                 </ListItemIcon>
-                <Typography textAlign="center">Dashboard</Typography>
+                <ListItemText primary="Dashboard" />
               </MenuItem>
               <MenuItem onClick={handleLogout}>
                 <ListItemIcon>
                   <LogoutIcon fontSize="small" />
                 </ListItemIcon>
-                <Typography textAlign="center">Logout</Typography>
+                <ListItemText primary="Logout" />
               </MenuItem>
             </Menu>
           </Box>
         </Toolbar>
       </AppBar>
       <Box
-        component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        aria-label="mailbox folders"
-      >
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
-          sx={{
-            display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-          }}
-        >
-          {drawer}
-        </Drawer>
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-          }}
-          open
-        >
-          {drawer}
-        </Drawer>
-      </Box>
-      <Box
         component="main"
         sx={{
           flexGrow: 1,
           p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          width: '100%',
           minHeight: '100vh',
         }}
       >
@@ -277,4 +176,4 @@ const DashboardLayout = ({ children, title, menuItems }) => {
   );
 };
 
-export default DashboardLayout;
+export default SimpleLayout;
