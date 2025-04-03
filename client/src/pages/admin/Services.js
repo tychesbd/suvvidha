@@ -26,7 +26,8 @@ import {
   Tooltip,
   Snackbar,
   Alert,
-  CircularProgress
+  CircularProgress,
+  InputAdornment
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -34,23 +35,13 @@ import {
   Delete as DeleteIcon,
   Close as CloseIcon,
   Save as SaveIcon,
-  Upload as UploadIcon
+  Upload as UploadIcon,
+  Search as SearchIcon
 } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { getServices, createService, updateService, deleteService, reset } from '../../features/services/serviceSlice';
+import { getCategories } from '../../features/categories/categorySlice';
 
-// Sample categories for dropdown
-const categories = [
-  'Cleaning',
-  'Plumbing',
-  'Electrical',
-  'Painting',
-  'Carpentry',
-  'Gardening',
-  'Home Repair',
-  'Appliance Repair',
-  'Other'
-];
 
 // Fallback services in case API fails
 const fallbackServices = [
@@ -83,8 +74,10 @@ const fallbackServices = [
 const AdminServices = () => {
   const dispatch = useDispatch();
   const { services: apiServices, isLoading, isSuccess, isError, message } = useSelector((state) => state.services);
+  const { categories: apiCategories } = useSelector((state) => state.categories);
   
   const [services, setServices] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [currentService, setCurrentService] = useState(null);
@@ -95,9 +88,10 @@ const AdminServices = () => {
     severity: 'success'
   });
   
-  // Fetch services when component mounts
+  // Fetch services and categories when component mounts
   useEffect(() => {
     dispatch(getServices());
+    dispatch(getCategories());
     
     return () => {
       dispatch(reset());
@@ -253,6 +247,20 @@ const AdminServices = () => {
     );
   }
 
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Filter services based on search term
+  const filteredServices = services.filter((service) => {
+    return (
+      service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (service.description && service.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (service.category && service.category.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  });
+
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -270,6 +278,24 @@ const AdminServices = () => {
         </Button>
       </Box>
 
+      {/* Search Bar */}
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          variant="outlined"
+          placeholder="Search services by name, category or description"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
+
       <TableContainer component={Paper} sx={{ mb: 4 }}>
         <Table>
           <TableHead>
@@ -284,12 +310,14 @@ const AdminServices = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {services.length === 0 ? (
+            {filteredServices.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} align="center">No services found</TableCell>
+                <TableCell colSpan={7} align="center">
+                  {services.length === 0 ? 'No services found' : 'No matching services found'}
+                </TableCell>
               </TableRow>
             ) : (
-              services.map((service) => (
+              filteredServices.map((service) => (
                 <TableRow key={service._id || service.id}>
                   <TableCell>{service._id || service.id}</TableCell>
                   <TableCell>
@@ -350,11 +378,15 @@ const AdminServices = () => {
                   onChange={handleInputChange}
                   label="Category"
                 >
-                  {categories.map((category) => (
-                    <MenuItem key={category} value={category}>
-                      {category}
-                    </MenuItem>
-                  ))}
+                  {apiCategories && apiCategories.length > 0 ? (
+                    apiCategories.map((category) => (
+                      <MenuItem key={category._id} value={category.name}>
+                        {category.name}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem value="">No categories available</MenuItem>
+                  )}
                 </Select>
               </FormControl>
               <TextField

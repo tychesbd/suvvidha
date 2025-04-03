@@ -115,6 +115,27 @@ const getServicesByCategory = asyncHandler(async (req, res) => {
   res.json(services);
 });
 
+// @desc    Search services
+// @route   GET /api/services/search/:keyword
+// @access  Public
+const searchServices = asyncHandler(async (req, res) => {
+  const keyword = req.params.keyword;
+  
+  if (!keyword) {
+    return res.status(400).json({ message: 'Please provide a search keyword' });
+  }
+  
+  const services = await Service.find({
+    $or: [
+      { name: { $regex: keyword, $options: 'i' } },
+      { description: { $regex: keyword, $options: 'i' } },
+      { category: { $regex: keyword, $options: 'i' } }
+    ]
+  });
+  
+  res.json(services);
+});
+
 module.exports = {
   createService,
   getServices,
@@ -122,4 +143,5 @@ module.exports = {
   updateService,
   deleteService,
   getServicesByCategory,
+  searchServices,
 };

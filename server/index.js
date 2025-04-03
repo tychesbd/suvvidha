@@ -21,6 +21,7 @@ app.use(express.urlencoded({ extended: false }));
 // Routes
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/services', require('./routes/serviceRoutes'));
+app.use('/api/categories', require('./routes/categoryRoutes'));
 
 // Default route
 app.get('/', (req, res) => {

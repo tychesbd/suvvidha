@@ -1,15 +1,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_URL = '/api/services';
+const API_URL = '/api/categories';
 
-// Get all services
-export const getServices = createAsyncThunk(
-  'services/getAll',
-  async (keyword = '', thunkAPI) => {
+// Get all categories
+export const getCategories = createAsyncThunk(
+  'categories/getAll',
+  async (_, thunkAPI) => {
     try {
-      const url = keyword ? `${API_URL}/search/${keyword}` : API_URL;
-      const response = await axios.get(url);
+      const response = await axios.get(API_URL);
       return response.data;
     } catch (error) {
       const message =
@@ -21,27 +20,10 @@ export const getServices = createAsyncThunk(
   }
 );
 
-// Get service by ID
-export const getServiceById = createAsyncThunk(
-  'services/getById',
-  async (id, thunkAPI) => {
-    try {
-      const response = await axios.get(`${API_URL}/${id}`);
-      return response.data;
-    } catch (error) {
-      const message =
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message;
-      return thunkAPI.rejectWithValue(message);
-    }
-  }
-);
-
-// Create new service
-export const createService = createAsyncThunk(
-  'services/create',
-  async (serviceData, thunkAPI) => {
+// Create new category
+export const createCategory = createAsyncThunk(
+  'categories/create',
+  async (categoryData, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.userInfo.token;
       const config = {
@@ -49,7 +31,7 @@ export const createService = createAsyncThunk(
           Authorization: `Bearer ${token}`,
         },
       };
-      const response = await axios.post(API_URL, serviceData, config);
+      const response = await axios.post(API_URL, categoryData, config);
       return response.data;
     } catch (error) {
       const message =
@@ -61,10 +43,10 @@ export const createService = createAsyncThunk(
   }
 );
 
-// Update service
-export const updateService = createAsyncThunk(
-  'services/update',
-  async ({ id, serviceData }, thunkAPI) => {
+// Update category
+export const updateCategory = createAsyncThunk(
+  'categories/update',
+  async ({ id, categoryData }, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.userInfo.token;
       const config = {
@@ -72,7 +54,7 @@ export const updateService = createAsyncThunk(
           Authorization: `Bearer ${token}`,
         },
       };
-      const response = await axios.put(`${API_URL}/${id}`, serviceData, config);
+      const response = await axios.put(`${API_URL}/${id}`, categoryData, config);
       return response.data;
     } catch (error) {
       const message =
@@ -84,9 +66,9 @@ export const updateService = createAsyncThunk(
   }
 );
 
-// Delete service
-export const deleteService = createAsyncThunk(
-  'services/delete',
+// Delete category
+export const deleteCategory = createAsyncThunk(
+  'categories/delete',
   async (id, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.userInfo.token;
@@ -108,16 +90,16 @@ export const deleteService = createAsyncThunk(
 );
 
 const initialState = {
-  services: [],
-  service: null,
+  categories: [],
+  category: null,
   isLoading: false,
   isSuccess: false,
   isError: false,
   message: '',
 };
 
-export const serviceSlice = createSlice({
-  name: 'services',
+export const categorySlice = createSlice({
+  name: 'categories',
   initialState,
   reducers: {
     reset: (state) => {
@@ -129,76 +111,62 @@ export const serviceSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Get all services
-      .addCase(getServices.pending, (state) => {
+      // Get all categories
+      .addCase(getCategories.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(getServices.fulfilled, (state, action) => {
+      .addCase(getCategories.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.services = action.payload;
+        state.categories = action.payload;
       })
-      .addCase(getServices.rejected, (state, action) => {
+      .addCase(getCategories.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
       })
-      // Get service by ID
-      .addCase(getServiceById.pending, (state) => {
+      // Create category
+      .addCase(createCategory.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(getServiceById.fulfilled, (state, action) => {
+      .addCase(createCategory.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.service = action.payload;
+        state.categories.push(action.payload);
       })
-      .addCase(getServiceById.rejected, (state, action) => {
+      .addCase(createCategory.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
       })
-      // Create service
-      .addCase(createService.pending, (state) => {
+      // Update category
+      .addCase(updateCategory.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(createService.fulfilled, (state, action) => {
+      .addCase(updateCategory.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.services.push(action.payload);
-      })
-      .addCase(createService.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = true;
-        state.message = action.payload;
-      })
-      // Update service
-      .addCase(updateService.pending, (state) => {
-        state.isLoading = true;
-      })
-      .addCase(updateService.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isSuccess = true;
-        state.services = state.services.map((service) =>
-          service._id === action.payload._id ? action.payload : service
+        state.categories = state.categories.map((category) =>
+          category._id === action.payload._id ? action.payload : category
         );
       })
-      .addCase(updateService.rejected, (state, action) => {
+      .addCase(updateCategory.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
       })
-      // Delete service
-      .addCase(deleteService.pending, (state) => {
+      // Delete category
+      .addCase(deleteCategory.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(deleteService.fulfilled, (state, action) => {
+      .addCase(deleteCategory.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.services = state.services.filter(
-          (service) => service._id !== action.payload
+        state.categories = state.categories.filter(
+          (category) => category._id !== action.payload
         );
       })
-      .addCase(deleteService.rejected, (state, action) => {
+      .addCase(deleteCategory.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
@@ -206,5 +174,5 @@ export const serviceSlice = createSlice({
   },
 });
 
-export const { reset } = serviceSlice.actions;
-export default serviceSlice.reducer;
+export const { reset } = categorySlice.actions;
+export default categorySlice.reducer;

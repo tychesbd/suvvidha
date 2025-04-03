@@ -7,13 +7,15 @@ const {
   updateService,
   deleteService,
   getServicesByCategory,
+  searchServices,
 } = require('../controllers/serviceController');
 const { protect, admin } = require('../middleware/authMiddleware');
 
 // Public routes
 router.get('/', getServices);
-router.get('/:id', getServiceById);
+router.get('/search/:keyword', searchServices);
 router.get('/category/:category', getServicesByCategory);
+router.get('/:id', getServiceById);
 
 // Admin routes
 router.post('/', protect, admin, createService);
