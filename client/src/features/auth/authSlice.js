@@ -65,13 +65,18 @@ export const updateProfile = createAsyncThunk(
   async (userData, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.userInfo.token;
+      
+      // Check if userData is FormData (for file uploads)
+      const isFormData = userData instanceof FormData;
+      
       const config = {
         headers: {
-          'Content-Type': 'application/json',
+          // Don't set Content-Type for FormData, browser will set it with boundary
+          ...(!isFormData && { 'Content-Type': 'application/json' }),
           Authorization: `Bearer ${token}`,
         },
       };
-
+      
       const response = await axios.put('/api/users/profile', userData, config);
       
       if (response.data) {

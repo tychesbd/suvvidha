@@ -36,6 +36,19 @@ const userSchema = mongoose.Schema(
       type: String,
       default: 'default-avatar.png',
     },
+    // Vendor specific fields
+    idProofDocument: {
+      type: String,
+      // Only required for vendors
+    },
+    yearsOfExperience: {
+      type: Number,
+      default: 0,
+    },
+    serviceExpertise: [{
+      type: String,
+      // References categories
+    }],
     isActive: {
       type: Boolean,
       default: true,

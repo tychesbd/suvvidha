@@ -139,6 +139,29 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     user.phone = req.body.phone || user.phone;
     user.address = req.body.address || user.address;
     user.profileImage = req.body.profileImage || user.profileImage;
+    
+    // Update vendor-specific fields if user is a vendor
+    if (user.role === 'vendor') {
+      // Handle ID proof document if uploaded
+      if (req.file) {
+        user.idProofDocument = `/uploads/${req.file.filename}`;
+      }
+      
+      // Update years of experience if provided
+      if (req.body.yearsOfExperience) {
+        user.yearsOfExperience = req.body.yearsOfExperience;
+      }
+      
+      // Update service expertise if provided
+      if (req.body.serviceExpertise) {
+        // If it's a string, convert to array (for handling form data)
+        if (typeof req.body.serviceExpertise === 'string') {
+          user.serviceExpertise = req.body.serviceExpertise.split(',');
+        } else {
+          user.serviceExpertise = req.body.serviceExpertise;
+        }
+      }
+    }
 
     if (req.body.password) {
       user.password = req.body.password;
