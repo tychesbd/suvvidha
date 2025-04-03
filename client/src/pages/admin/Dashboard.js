@@ -27,6 +27,7 @@ import SimpleLayout from '../../components/layout/SimpleLayout';
 import Profile from './Profile';
 import AdminServices from './Services';
 import AdminCategories from './Categories';
+import ContentManagement from './ContentManagement';
 
 // Common pages
 import Home from '../common/Home';
@@ -180,6 +181,11 @@ const AdminDashboard = () => {
       path: '/admin/categories',
     },
     {
+      text: 'Content',
+      icon: <HomeIcon />,
+      path: '/admin/content',
+    },
+    {
       text: 'Bookings',
       icon: <CalendarTodayIcon />,
       path: '/admin/orders',
@@ -222,6 +228,11 @@ const AdminDashboard = () => {
       <Route path="/categories" element={
         <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
           <AdminCategories />
+        </DashboardLayout>
+      } />
+      <Route path="/content" element={
+        <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
+          <ContentManagement />
         </DashboardLayout>
       } />
       <Route path="/orders" element={

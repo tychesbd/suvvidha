@@ -32,6 +32,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/services', require('./routes/serviceRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
+app.use('/api/content', require('./routes/contentRoutes'));
 
 // Default route
 app.get('/', (req, res) => {
