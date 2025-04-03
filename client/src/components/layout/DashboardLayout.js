@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { logout } from '../../features/auth/authSlice';
+import NotificationIcon from '../notifications/NotificationIcon';
 
 // Material UI imports
 import {
@@ -187,6 +188,11 @@ const DashboardLayout = ({ children, title, menuItems }) => {
               About Us
             </Button>
           </Box>
+          {/* Notification Icon */}
+          <Box sx={{ flexGrow: 0, mr: 2 }}>
+            <NotificationIcon />
+          </Box>
+          
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>

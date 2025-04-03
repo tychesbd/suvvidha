@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const asyncHandler = require('express-async-handler');
 const User = require('../models/userModel');
+const { createUserNotification, createRoleNotifications } = require('../utils/notificationUtils');
 
 // Generate JWT
 const generateToken = (id) => {
@@ -39,6 +40,26 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 
   if (user) {
+    // Create welcome notification for the new user
+    await createUserNotification(
+      user._id,
+      'Welcome to Suvvidha!',
+      `Hello ${user.name}, welcome to Suvvidha. We're glad to have you on board.`,
+      'success',
+      `/${user.role}/dashboard`
+    );
+    
+    // Notify admins about new user registration
+    if (user.role !== 'admin') {
+      await createRoleNotifications(
+        'admin',
+        'New User Registration',
+        `A new user (${user.name}) has registered with the role of ${user.role}.`,
+        'info',
+        '/admin/users'
+      );
+    }
+    
     res.status(201).json({
       _id: user.id,
       name: user.name,
@@ -124,6 +145,15 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     }
 
     const updatedUser = await user.save();
+
+    // Create notification for the user about profile update
+    await createUserNotification(
+      user._id,
+      'Profile Updated',
+      'Your profile information has been successfully updated.',
+      'success',
+      `/${user.role}/profile`
+    );
 
     res.json({
       _id: updatedUser._id,
@@ -228,6 +258,27 @@ const toggleUserStatus = asyncHandler(async (req, res) => {
   user.isActive = !user.isActive;
   
   const updatedUser = await user.save();
+
+  // Create notification for the user about their account status
+  await createUserNotification(
+    user._id,
+    user.isActive ? 'Account Activated' : 'Account Deactivated',
+    user.isActive 
+      ? 'Your account has been activated. You can now access all features.'
+      : 'Your account has been deactivated. Please contact support for assistance.',
+    user.isActive ? 'success' : 'error'
+  );
+
+  // Notify admins about the status change
+  if (req.user._id.toString() !== user._id.toString()) {
+    await createRoleNotifications(
+      'admin',
+      `User ${user.isActive ? 'Unblocked' : 'Blocked'}`,
+      `${user.name} (${user.email}) has been ${user.isActive ? 'unblocked' : 'blocked'} by ${req.user.name}.`,
+      'info',
+      '/admin/users'
+    );
+  }
 
   res.json({
     _id: updatedUser._id,
