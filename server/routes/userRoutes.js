@@ -6,6 +6,7 @@ const {
   getUserProfile,
   updateUserProfile,
   getUsers,
+  toggleUserStatus,
   createDefaultUsers,
 } = require('../controllers/userController');
 const { protect, admin } = require('../middleware/authMiddleware');
@@ -21,5 +22,6 @@ router.put('/profile', protect, updateUserProfile);
 
 // Admin routes
 router.get('/', protect, admin, getUsers);
+router.put('/:id/toggle-status', protect, admin, toggleUserStatus);
 
 module.exports = router;

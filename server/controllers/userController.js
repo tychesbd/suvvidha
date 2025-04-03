@@ -35,6 +35,7 @@ const registerUser = asyncHandler(async (req, res) => {
     email,
     password,
     role: role || 'customer',
+    isActive: true, // Set default status to active
   });
 
   if (user) {
@@ -43,6 +44,7 @@ const registerUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      isActive: user.isActive,
       token: generateToken(user._id),
     });
   } else {
@@ -61,11 +63,18 @@ const loginUser = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email });
 
   if (user && (await user.matchPassword(password))) {
+    // Check if user is active
+    if (!user.isActive) {
+      res.status(401);
+      throw new Error('Your account has been blocked. Please contact support.');
+    }
+    
     res.json({
       _id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
+      isActive: user.isActive,
       token: generateToken(user._id),
     });
   } else {
@@ -89,6 +98,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
       phone: user.phone,
       address: user.address,
       profileImage: user.profileImage,
+      isActive: user.isActive,
     });
   } else {
     res.status(404);
@@ -123,6 +133,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       phone: updatedUser.phone,
       address: updatedUser.address,
       profileImage: updatedUser.profileImage,
+      isActive: updatedUser.isActive,
       token: generateToken(updatedUser._id),
     });
   } else {
@@ -161,6 +172,7 @@ const createDefaultUsers = asyncHandler(async (req, res) => {
       email: 'admin@suvvidha.com',
       password: 'admin123',
       role: 'admin',
+      isActive: true,
     });
     users.push({ name: admin.name, email: admin.email, role: admin.role });
   }
@@ -172,6 +184,7 @@ const createDefaultUsers = asyncHandler(async (req, res) => {
       email: 'vendor@suvvidha.com',
       password: 'vendor123',
       role: 'vendor',
+      isActive: true,
     });
     users.push({ name: vendor.name, email: vendor.email, role: vendor.role });
   }
@@ -183,6 +196,7 @@ const createDefaultUsers = asyncHandler(async (req, res) => {
       email: 'customer@suvvidha.com',
       password: 'customer123',
       role: 'customer',
+      isActive: true,
     });
     users.push({ name: customer.name, email: customer.email, role: customer.role });
   }
@@ -193,11 +207,43 @@ const createDefaultUsers = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Toggle user active status (block/unblock)
+// @route   PUT /api/users/:id/toggle-status
+// @access  Private/Admin
+const toggleUserStatus = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  // Prevent admin from blocking themselves
+  if (user._id.toString() === req.user._id.toString() && user.role === 'admin') {
+    res.status(400);
+    throw new Error('Admin cannot block themselves');
+  }
+
+  // Toggle the isActive status
+  user.isActive = !user.isActive;
+  
+  const updatedUser = await user.save();
+
+  res.json({
+    _id: updatedUser._id,
+    name: updatedUser.name,
+    email: updatedUser.email,
+    isActive: updatedUser.isActive,
+    message: `User ${updatedUser.isActive ? 'unblocked' : 'blocked'} successfully`,
+  });
+});
+
 module.exports = {
   registerUser,
   loginUser,
   getUserProfile,
   updateUserProfile,
   getUsers,
+  toggleUserStatus,
   createDefaultUsers,
 };

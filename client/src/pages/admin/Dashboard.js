@@ -25,6 +25,7 @@ import SimpleLayout from '../../components/layout/SimpleLayout';
 
 // Dashboard sub-pages
 import Profile from './Profile';
+import Users from './Users';
 import AdminServices from './Services';
 import AdminCategories from './Categories';
 import ContentManagement from './ContentManagement';
@@ -217,7 +218,7 @@ const AdminDashboard = () => {
       } />
       <Route path="/users" element={
         <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
-          <Typography variant="h4">Users Management</Typography>
+          <Users />
         </DashboardLayout>
       } />
       <Route path="/services" element={

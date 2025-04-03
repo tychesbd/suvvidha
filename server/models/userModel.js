@@ -36,6 +36,10 @@ const userSchema = mongoose.Schema(
       type: String,
       default: 'default-avatar.png',
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,
