@@ -215,19 +215,26 @@ const AdminServices = () => {
     }
   };
 
-  // Handle image upload (mock function - would connect to backend in real app)
+  // Handle image upload
   const handleImageUpload = (e) => {
-    // In a real app, this would upload to a server and get a URL back
-    // For now, we'll just use a placeholder
-    setFormData({
-      ...formData,
-      image: `https://source.unsplash.com/random/300x200/?${formData.category.toLowerCase() || 'service'}`
-    });
-    setSnackbar({
-      open: true,
-      message: 'Image uploaded successfully',
-      severity: 'success'
-    });
+    const file = e.target.files[0];
+    if (file) {
+      // Create a preview URL for the UI
+      const previewUrl = URL.createObjectURL(file);
+      
+      // Store the file in formData for submission
+      setFormData({
+        ...formData,
+        image: previewUrl,
+        imageFile: file
+      });
+      
+      setSnackbar({
+        open: true,
+        message: 'Image selected successfully',
+        severity: 'success'
+      });
+    }
   };
 
   // Close snackbar
@@ -433,10 +440,14 @@ const AdminServices = () => {
                     variant="outlined"
                     component="label"
                     startIcon={<UploadIcon />}
-                    onClick={handleImageUpload}
                   >
                     Upload Image
-                    <input type="file" hidden accept="image/*" />
+                    <input 
+                      type="file" 
+                      hidden 
+                      accept="image/*" 
+                      onChange={handleImageUpload}
+                    />
                   </Button>
                 </Box>
               </Box>

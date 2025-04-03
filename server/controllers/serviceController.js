@@ -5,7 +5,7 @@ const Service = require('../models/serviceModel');
 // @route   POST /api/services
 // @access  Private/Admin
 const createService = asyncHandler(async (req, res) => {
-  const { name, description, category, minPrice, image } = req.body;
+  const { name, description, category, minPrice } = req.body;
 
   if (!name || !description || !category || !minPrice) {
     res.status(400);
@@ -20,14 +20,20 @@ const createService = asyncHandler(async (req, res) => {
     throw new Error('Service with this name already exists');
   }
 
+  // Set image path if file was uploaded
+  let imagePath = `https://source.unsplash.com/random/300x200/?${category.toLowerCase()}`;
+  if (req.file) {
+    imagePath = `/uploads/${req.file.filename}`;
+  }
+
   // Create service
   const service = await Service.create({
     name,
     description,
     category,
     minPrice,
-    image: image || `https://source.unsplash.com/random/300x200/?${category.toLowerCase()}`,
-  });
+    image: imagePath,
+  })
 
   if (service) {
     res.status(201).json(service);
@@ -63,7 +69,7 @@ const getServiceById = asyncHandler(async (req, res) => {
 // @route   PUT /api/services/:id
 // @access  Private/Admin
 const updateService = asyncHandler(async (req, res) => {
-  const { name, description, category, minPrice, image, isActive } = req.body;
+  const { name, description, category, minPrice, isActive } = req.body;
 
   const service = await Service.findById(req.params.id);
 
@@ -76,12 +82,16 @@ const updateService = asyncHandler(async (req, res) => {
         throw new Error('Service with this name already exists');
       }
     }
+    
+    // Set image path if file was uploaded
+    if (req.file) {
+      service.image = `/uploads/${req.file.filename}`;
+    }
 
     service.name = name || service.name;
     service.description = description || service.description;
     service.category = category || service.category;
     service.minPrice = minPrice !== undefined ? minPrice : service.minPrice;
-    service.image = image || service.image;
     service.isActive = isActive !== undefined ? isActive : service.isActive;
 
     const updatedService = await service.save();

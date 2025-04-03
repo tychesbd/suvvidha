@@ -47,9 +47,23 @@ export const createService = createAsyncThunk(
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
         },
       };
-      const response = await axios.post(API_URL, serviceData, config);
+      
+      // Create FormData to handle file upload
+      const formData = new FormData();
+      formData.append('name', serviceData.name);
+      formData.append('description', serviceData.description);
+      formData.append('category', serviceData.category);
+      formData.append('minPrice', serviceData.minPrice);
+      
+      // Append image file if it exists
+      if (serviceData.imageFile) {
+        formData.append('image', serviceData.imageFile);
+      }
+      
+      const response = await axios.post(API_URL, formData, config);
       return response.data;
     } catch (error) {
       const message =
@@ -70,9 +84,27 @@ export const updateService = createAsyncThunk(
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
         },
       };
-      const response = await axios.put(`${API_URL}/${id}`, serviceData, config);
+      
+      // Create FormData to handle file upload
+      const formData = new FormData();
+      formData.append('name', serviceData.name);
+      formData.append('description', serviceData.description);
+      formData.append('category', serviceData.category);
+      formData.append('minPrice', serviceData.minPrice);
+      
+      if (serviceData.isActive !== undefined) {
+        formData.append('isActive', serviceData.isActive);
+      }
+      
+      // Append image file if it exists
+      if (serviceData.imageFile) {
+        formData.append('image', serviceData.imageFile);
+      }
+      
+      const response = await axios.put(`${API_URL}/${id}`, formData, config);
       return response.data;
     } catch (error) {
       const message =
