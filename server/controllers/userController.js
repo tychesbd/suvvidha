@@ -144,7 +144,12 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     if (user.role === 'vendor') {
       // Handle ID proof document if uploaded
       if (req.file) {
+        console.log('File received:', req.file);
         user.idProofDocument = `/uploads/${req.file.filename}`;
+      } else {
+        console.log('No file received in request');
+        console.log('Request body:', req.body);
+        console.log('Request files:', req.files);
       }
       
       // Update years of experience if provided
@@ -178,7 +183,8 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       `/${user.role}/profile`
     );
 
-    res.json({
+    // Prepare response object with common fields
+    const responseObj = {
       _id: updatedUser._id,
       name: updatedUser.name,
       email: updatedUser.email,
@@ -188,7 +194,16 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       profileImage: updatedUser.profileImage,
       isActive: updatedUser.isActive,
       token: generateToken(updatedUser._id),
-    });
+    };
+    
+    // Add vendor-specific fields to response if user is a vendor
+    if (updatedUser.role === 'vendor') {
+      responseObj.idProofDocument = updatedUser.idProofDocument;
+      responseObj.yearsOfExperience = updatedUser.yearsOfExperience;
+      responseObj.serviceExpertise = updatedUser.serviceExpertise;
+    }
+    
+    res.json(responseObj);
   } else {
     res.status(404);
     throw new Error('User not found');

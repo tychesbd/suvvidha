@@ -60,6 +60,10 @@ const Profile = () => {
     if (isSuccess && isEditing) {
       toast.success('Profile updated successfully');
       setIsEditing(false);
+      
+      // Reset file state after successful update
+      setIdProofFile(null);
+      setIdProofPreview('');
     }
 
     dispatch(reset());
@@ -140,7 +144,15 @@ const Profile = () => {
     
     // Append ID proof document if selected
     if (idProofFile) {
+      // Make sure the field name matches what the server expects in upload.single()
       formDataToSend.append('idProofDocument', idProofFile);
+      console.log('File being uploaded:', idProofFile.name, 'Size:', idProofFile.size);
+    }
+    
+    // Log the FormData contents for debugging
+    console.log('FormData being sent:');
+    for (let pair of formDataToSend.entries()) {
+      console.log(pair[0] + ': ' + (pair[0] === 'idProofDocument' ? 'File object' : pair[1]));
     }
     
     dispatch(updateProfile(formDataToSend));

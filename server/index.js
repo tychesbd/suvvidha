@@ -45,6 +45,37 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`.yellow.bold);
+// Function to find an available port
+const findAvailablePort = (startPort) => {
+  return new Promise((resolve) => {
+    // Ensure port is a number
+    const port = parseInt(startPort, 10);
+    
+    // Create a server to test the port
+    const server = require('net').createServer();
+    
+    server.once('error', () => {
+      // Port is in use, try the next one
+      resolve(findAvailablePort(port + 1));
+    });
+    
+    server.once('listening', () => {
+      // Port is available, close the server and return the port
+      server.close(() => {
+        resolve(port);
+      });
+    });
+    
+    server.listen(port);
+  });
+};
+
+// Start server with port detection
+findAvailablePort(PORT).then((availablePort) => {
+  app.listen(availablePort, () => {
+    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${availablePort}`.yellow.bold);
+    if (availablePort !== PORT) {
+      console.log(`Note: Default port ${PORT} was already in use, using port ${availablePort} instead`.yellow);
+    }
+  });
 });

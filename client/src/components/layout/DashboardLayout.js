@@ -196,7 +196,7 @@ const DashboardLayout = ({ children, title, menuItems }) => {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt={userInfo?.name} src="/static/images/avatar/2.jpg" />
+                <Avatar alt={userInfo?.name} src="/static/images/avatar/2.svg" />
               </IconButton>
             </Tooltip>
             <Menu

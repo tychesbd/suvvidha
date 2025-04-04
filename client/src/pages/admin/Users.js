@@ -27,12 +27,14 @@ import {
   MenuItem,
   CircularProgress,
   Alert,
+  Divider,
 } from '@mui/material';
 import {
   Search as SearchIcon,
   Visibility as VisibilityIcon,
   Block as BlockIcon,
   CheckCircle as CheckCircleIcon,
+  Download as DownloadIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 
@@ -374,7 +376,7 @@ const Users = () => {
       )}
 
       {/* User Detail Dialog */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         {selectedUser && (
           <>
             <DialogTitle>
@@ -432,6 +434,95 @@ const Users = () => {
                     <Typography variant="body1">{selectedUser.address}</Typography>
                   </Grid>
                 )}
+                
+                {/* Vendor-specific information */}
+                {selectedUser.role === 'vendor' && (
+                  <>
+                    <Grid item xs={12}>
+                      <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
+                        Vendor Information
+                      </Typography>
+                      <Divider />
+                    </Grid>
+                    
+                    {selectedUser.yearsOfExperience !== undefined && (
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Years of Experience
+                        </Typography>
+                        <Typography variant="body1">
+                          {selectedUser.yearsOfExperience || '0'} years
+                        </Typography>
+                      </Grid>
+                    )}
+                    
+                    {selectedUser.serviceExpertise && selectedUser.serviceExpertise.length > 0 && (
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Service Expertise
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                          {selectedUser.serviceExpertise.map((service, index) => (
+                            <Chip key={index} label={service} size="small" color="primary" variant="outlined" />
+                          ))}
+                        </Box>
+                      </Grid>
+                    )}
+                    
+                    {selectedUser.idProofDocument && (
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          ID Proof Document
+                        </Typography>
+                        <Box sx={{ mt: 1, display: 'flex', gap: 2 }}>
+                          <Button 
+                            variant="contained" 
+                            color="primary" 
+                            size="small"
+                            startIcon={<DownloadIcon />}
+                            component="a" 
+                            href={selectedUser.idProofDocument} 
+                            download={`ID_Proof_${selectedUser.name.replace(/\s+/g, '_')}.${selectedUser.idProofDocument.split('.').pop()}`}
+                            sx={{ mt: 1 }}
+                          >
+                            Download Document
+                          </Button>
+                          <Button 
+                            variant="outlined" 
+                            color="primary" 
+                            size="small"
+                            component="a" 
+                            href={selectedUser.idProofDocument} 
+                            target="_blank"
+                            sx={{ mt: 1 }}
+                          >
+                            View Document
+                          </Button>
+                        </Box>
+                      </Grid>
+                    )}
+                    
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 1 }}>
+                        Vendor Status
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                        <Chip 
+                          label={selectedUser.isActive ? 'Active Vendor' : 'Inactive Vendor'}
+                          color={selectedUser.isActive ? 'success' : 'error'}
+                          size="small"
+                          sx={{ mr: 1 }}
+                        />
+                        <Typography variant="body2" color="text.secondary">
+                          {selectedUser.isActive 
+                            ? 'This vendor can currently provide services to customers.' 
+                            : 'This vendor is currently blocked from providing services.'}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  </>
+                )}
+                
                 <Grid item xs={12}>
                   <Typography variant="subtitle2" color="text.secondary">
                     Last Updated

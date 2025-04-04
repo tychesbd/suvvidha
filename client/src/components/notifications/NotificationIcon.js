@@ -202,6 +202,7 @@ const NotificationIcon = () => {
                     <Typography
                       variant="body2"
                       color="text.secondary"
+                      component="span"
                       sx={{
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
@@ -212,7 +213,7 @@ const NotificationIcon = () => {
                     >
                       {notification.message}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant="caption" color="text.secondary" component="span" display="block">
                       {formatRelativeTime(notification.createdAt)}
                     </Typography>
                   </>
