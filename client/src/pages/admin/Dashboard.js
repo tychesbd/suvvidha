@@ -25,6 +25,10 @@ import SimpleLayout from '../../components/layout/SimpleLayout';
 
 // Dashboard sub-pages
 import Profile from './Profile';
+import Users from './Users';
+import AdminServices from './Services';
+import AdminCategories from './Categories';
+import ContentManagement from './ContentManagement';
 
 // Common pages
 import Home from '../common/Home';
@@ -170,7 +174,17 @@ const AdminDashboard = () => {
     {
       text: 'Services',
       icon: <MiscellaneousServicesIcon />,
-      path: '/admin/products',
+      path: '/admin/services',
+    },
+    {
+      text: 'Categories',
+      icon: <CategoryIcon />,
+      path: '/admin/categories',
+    },
+    {
+      text: 'Content',
+      icon: <HomeIcon />,
+      path: '/admin/content',
     },
     {
       text: 'Bookings',
@@ -204,12 +218,22 @@ const AdminDashboard = () => {
       } />
       <Route path="/users" element={
         <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
-          <Typography variant="h4">Users Management</Typography>
+          <Users />
         </DashboardLayout>
       } />
-      <Route path="/products" element={
+      <Route path="/services" element={
         <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
-          <Typography variant="h4">Products Management</Typography>
+          <AdminServices />
+        </DashboardLayout>
+      } />
+      <Route path="/categories" element={
+        <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
+          <AdminCategories />
+        </DashboardLayout>
+      } />
+      <Route path="/content" element={
+        <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
+          <ContentManagement />
         </DashboardLayout>
       } />
       <Route path="/orders" element={

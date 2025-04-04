@@ -1,7 +1,10 @@
-import React from 'react';
-import { Typography, Container, Grid, Card, CardContent, CardMedia, CardActionArea, Box } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Typography, Container, Grid, Card, CardContent, CardMedia, CardActionArea, Box, CircularProgress } from '@mui/material';
+import { useDispatch, useSelector } from 'react-redux';
+import { getServices } from '../../features/services/serviceSlice';
 
-const services = [
+// Fallback services in case API fails
+const fallbackServices = [
   {
     id: 1,
     title: 'Home Cleaning',
@@ -41,6 +44,30 @@ const services = [
 ];
 
 const Services = () => {
+  const dispatch = useDispatch();
+  const { services: apiServices, isLoading, isError } = useSelector((state) => state.services);
+  const [services, setServices] = useState([]);
+
+  useEffect(() => {
+    dispatch(getServices());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (apiServices && apiServices.length > 0) {
+      setServices(apiServices);
+    } else if (isError) {
+      setServices(fallbackServices);
+    }
+  }, [apiServices, isError]);
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
@@ -77,11 +104,16 @@ const Services = () => {
                 />
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Typography gutterBottom variant="h5" component="h2">
-                    {service.title}
+                    {service.title || service.name}
                   </Typography>
                   <Typography>
                     {service.description}
                   </Typography>
+                  {service.minPrice && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      Starting from ₹{service.minPrice}
+                    </Typography>
+                  )}
                 </CardContent>
               </CardActionArea>
             </Card>

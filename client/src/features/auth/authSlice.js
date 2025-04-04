@@ -65,20 +65,51 @@ export const updateProfile = createAsyncThunk(
   async (userData, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.userInfo.token;
+      
+      // Check if userData is FormData (for file uploads)
+      const isFormData = userData instanceof FormData;
+      
       const config = {
         headers: {
-          'Content-Type': 'application/json',
+          // Don't set Content-Type for FormData, browser will set it with boundary
+          ...(!isFormData && { 'Content-Type': 'application/json' }),
           Authorization: `Bearer ${token}`,
         },
+        // Add timeout to prevent request hanging indefinitely
+        timeout: 30000,
       };
-
-      const response = await axios.put('/api/users/profile', userData, config);
       
-      if (response.data) {
-        localStorage.setItem('userInfo', JSON.stringify(response.data));
+      // Log FormData contents for debugging (in development only)
+      if (isFormData) {
+        console.log('FormData contents:');
+        for (let pair of userData.entries()) {
+          console.log(pair[0] + ': ' + (pair[0] === 'idProofDocument' ? 'File object' : pair[1]));
+        }
       }
       
-      return response.data;
+      // Make the API request with proper error handling
+      try {
+        const response = await axios.put('/api/users/profile', userData, config);
+        
+        if (response.data) {
+          localStorage.setItem('userInfo', JSON.stringify(response.data));
+        }
+        
+        return response.data;
+      } catch (apiError) {
+        console.error('API Error:', apiError);
+        if (apiError.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.error('Response data:', apiError.response.data);
+          console.error('Response status:', apiError.response.status);
+          console.error('Response headers:', apiError.response.headers);
+        } else if (apiError.request) {
+          // The request was made but no response was received
+          console.error('Request made but no response received:', apiError.request);
+        }
+        throw apiError;
+      }
     } catch (error) {
       const message =
         (error.response && error.response.data && error.response.data.message) ||

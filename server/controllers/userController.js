@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const asyncHandler = require('express-async-handler');
 const User = require('../models/userModel');
+const { createUserNotification, createRoleNotifications } = require('../utils/notificationUtils');
 
 // Generate JWT
 const generateToken = (id) => {
@@ -35,14 +36,36 @@ const registerUser = asyncHandler(async (req, res) => {
     email,
     password,
     role: role || 'customer',
+    isActive: true, // Set default status to active
   });
 
   if (user) {
+    // Create welcome notification for the new user
+    await createUserNotification(
+      user._id,
+      'Welcome to Suvvidha!',
+      `Hello ${user.name}, welcome to Suvvidha. We're glad to have you on board.`,
+      'success',
+      `/${user.role}/dashboard`
+    );
+    
+    // Notify admins about new user registration
+    if (user.role !== 'admin') {
+      await createRoleNotifications(
+        'admin',
+        'New User Registration',
+        `A new user (${user.name}) has registered with the role of ${user.role}.`,
+        'info',
+        '/admin/users'
+      );
+    }
+    
     res.status(201).json({
       _id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
+      isActive: user.isActive,
       token: generateToken(user._id),
     });
   } else {
@@ -61,11 +84,18 @@ const loginUser = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email });
 
   if (user && (await user.matchPassword(password))) {
+    // Check if user is active
+    if (!user.isActive) {
+      res.status(401);
+      throw new Error('Your account has been blocked. Please contact support.');
+    }
+    
     res.json({
       _id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
+      isActive: user.isActive,
       token: generateToken(user._id),
     });
   } else {
@@ -89,6 +119,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
       phone: user.phone,
       address: user.address,
       profileImage: user.profileImage,
+      isActive: user.isActive,
     });
   } else {
     res.status(404);
@@ -108,6 +139,34 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     user.phone = req.body.phone || user.phone;
     user.address = req.body.address || user.address;
     user.profileImage = req.body.profileImage || user.profileImage;
+    
+    // Update vendor-specific fields if user is a vendor
+    if (user.role === 'vendor') {
+      // Handle ID proof document if uploaded
+      if (req.file) {
+        console.log('File received:', req.file);
+        user.idProofDocument = `/uploads/${req.file.filename}`;
+      } else {
+        console.log('No file received in request');
+        console.log('Request body:', req.body);
+        console.log('Request files:', req.files);
+      }
+      
+      // Update years of experience if provided
+      if (req.body.yearsOfExperience) {
+        user.yearsOfExperience = req.body.yearsOfExperience;
+      }
+      
+      // Update service expertise if provided
+      if (req.body.serviceExpertise) {
+        // If it's a string, convert to array (for handling form data)
+        if (typeof req.body.serviceExpertise === 'string') {
+          user.serviceExpertise = req.body.serviceExpertise.split(',');
+        } else {
+          user.serviceExpertise = req.body.serviceExpertise;
+        }
+      }
+    }
 
     if (req.body.password) {
       user.password = req.body.password;
@@ -115,7 +174,17 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 
     const updatedUser = await user.save();
 
-    res.json({
+    // Create notification for the user about profile update
+    await createUserNotification(
+      user._id,
+      'Profile Updated',
+      'Your profile information has been successfully updated.',
+      'success',
+      `/${user.role}/profile`
+    );
+
+    // Prepare response object with common fields
+    const responseObj = {
       _id: updatedUser._id,
       name: updatedUser.name,
       email: updatedUser.email,
@@ -123,8 +192,18 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       phone: updatedUser.phone,
       address: updatedUser.address,
       profileImage: updatedUser.profileImage,
+      isActive: updatedUser.isActive,
       token: generateToken(updatedUser._id),
-    });
+    };
+    
+    // Add vendor-specific fields to response if user is a vendor
+    if (updatedUser.role === 'vendor') {
+      responseObj.idProofDocument = updatedUser.idProofDocument;
+      responseObj.yearsOfExperience = updatedUser.yearsOfExperience;
+      responseObj.serviceExpertise = updatedUser.serviceExpertise;
+    }
+    
+    res.json(responseObj);
   } else {
     res.status(404);
     throw new Error('User not found');
@@ -161,6 +240,7 @@ const createDefaultUsers = asyncHandler(async (req, res) => {
       email: 'admin@suvvidha.com',
       password: 'admin123',
       role: 'admin',
+      isActive: true,
     });
     users.push({ name: admin.name, email: admin.email, role: admin.role });
   }
@@ -172,6 +252,7 @@ const createDefaultUsers = asyncHandler(async (req, res) => {
       email: 'vendor@suvvidha.com',
       password: 'vendor123',
       role: 'vendor',
+      isActive: true,
     });
     users.push({ name: vendor.name, email: vendor.email, role: vendor.role });
   }
@@ -183,6 +264,7 @@ const createDefaultUsers = asyncHandler(async (req, res) => {
       email: 'customer@suvvidha.com',
       password: 'customer123',
       role: 'customer',
+      isActive: true,
     });
     users.push({ name: customer.name, email: customer.email, role: customer.role });
   }
@@ -193,11 +275,64 @@ const createDefaultUsers = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Toggle user active status (block/unblock)
+// @route   PUT /api/users/:id/toggle-status
+// @access  Private/Admin
+const toggleUserStatus = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  // Prevent admin from blocking themselves
+  if (user._id.toString() === req.user._id.toString() && user.role === 'admin') {
+    res.status(400);
+    throw new Error('Admin cannot block themselves');
+  }
+
+  // Toggle the isActive status
+  user.isActive = !user.isActive;
+  
+  const updatedUser = await user.save();
+
+  // Create notification for the user about their account status
+  await createUserNotification(
+    user._id,
+    user.isActive ? 'Account Activated' : 'Account Deactivated',
+    user.isActive 
+      ? 'Your account has been activated. You can now access all features.'
+      : 'Your account has been deactivated. Please contact support for assistance.',
+    user.isActive ? 'success' : 'error'
+  );
+
+  // Notify admins about the status change
+  if (req.user._id.toString() !== user._id.toString()) {
+    await createRoleNotifications(
+      'admin',
+      `User ${user.isActive ? 'Unblocked' : 'Blocked'}`,
+      `${user.name} (${user.email}) has been ${user.isActive ? 'unblocked' : 'blocked'} by ${req.user.name}.`,
+      'info',
+      '/admin/users'
+    );
+  }
+
+  res.json({
+    _id: updatedUser._id,
+    name: updatedUser.name,
+    email: updatedUser.email,
+    isActive: updatedUser.isActive,
+    message: `User ${updatedUser.isActive ? 'unblocked' : 'blocked'} successfully`,
+  });
+});
+
 module.exports = {
   registerUser,
   loginUser,
   getUserProfile,
   updateUserProfile,
   getUsers,
+  toggleUserStatus,
   createDefaultUsers,
 };
