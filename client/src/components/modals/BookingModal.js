@@ -241,7 +241,7 @@ const BookingModal = ({ open, onClose, service }) => {
           <Box sx={{ mb: 3 }}>
             <TextField
               fullWidth
-              label="Name"
+              label="Name *"
               name="name"
               value={formData.name}
               onChange={handleChange}
@@ -249,11 +249,12 @@ const BookingModal = ({ open, onClose, service }) => {
               helperText={errors.name}
               margin="normal"
               variant="outlined"
+              required
             />
             
             <TextField
               fullWidth
-              label="Phone Number"
+              label="Phone Number *"
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
@@ -262,11 +263,12 @@ const BookingModal = ({ open, onClose, service }) => {
               margin="normal"
               variant="outlined"
               inputProps={{ maxLength: 10 }}
+              required
             />
             
             <TextField
               fullWidth
-              label="Pincode"
+              label="Pincode *"
               name="pincode"
               value={formData.pincode}
               onChange={handleChange}
@@ -275,6 +277,7 @@ const BookingModal = ({ open, onClose, service }) => {
               margin="normal"
               variant="outlined"
               inputProps={{ maxLength: 6 }}
+              required
             />
           </Box>
           
