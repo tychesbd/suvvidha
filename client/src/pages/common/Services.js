@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Container, Grid, Card, CardContent, CardMedia, CardActionArea, Box, CircularProgress } from '@mui/material';
+import { Typography, Container, Grid, Card, CardContent, CardMedia, CardActionArea, Box, CircularProgress, Divider } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { getServices } from '../../features/services/serviceSlice';
+import { getCategories } from '../../features/categories/categorySlice';
 
 // Fallback services in case API fails
 const fallbackServices = [
@@ -45,13 +46,19 @@ const fallbackServices = [
 
 const Services = () => {
   const dispatch = useDispatch();
-  const { services: apiServices, isLoading, isError } = useSelector((state) => state.services);
+  const { services: apiServices, isLoading: servicesLoading, isError } = useSelector((state) => state.services);
+  const { categories } = useSelector((state) => state.categories);
   const [services, setServices] = useState([]);
+  const [servicesByCategory, setServicesByCategory] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Fetch services and categories
   useEffect(() => {
     dispatch(getServices());
+    dispatch(getCategories());
   }, [dispatch]);
 
+  // Set services from API or fallback
   useEffect(() => {
     if (apiServices && apiServices.length > 0) {
       setServices(apiServices);
@@ -59,6 +66,34 @@ const Services = () => {
       setServices(fallbackServices);
     }
   }, [apiServices, isError]);
+
+  // Organize services by category
+  useEffect(() => {
+    if (services && services.length > 0 && categories && categories.length > 0) {
+      const servicesByCat = {};
+      
+      // Initialize categories
+      categories.forEach(category => {
+        servicesByCat[category.name] = [];
+      });
+      
+      // Group services by category
+      services.forEach(service => {
+        if (servicesByCat[service.category]) {
+          servicesByCat[service.category].push(service);
+        } else {
+          // If category doesn't exist yet
+          servicesByCat[service.category] = [service];
+        }
+      });
+      
+      setServicesByCategory(servicesByCat);
+      setIsLoading(false);
+    } else if (!servicesLoading && services.length > 0) {
+      // If we have services but no categories, just show all services
+      setIsLoading(false);
+    }
+  }, [services, categories, servicesLoading]);
 
   if (isLoading) {
     return (
@@ -79,47 +114,103 @@ const Services = () => {
         </Typography>
       </Box>
 
-      <Grid container spacing={4}>
-        {services.map((service) => (
-          <Grid item key={service.id} xs={12} sm={6} md={4}>
-            <Card 
-              sx={{ 
-                height: '100%', 
-                display: 'flex', 
-                flexDirection: 'column',
-                transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-                '&:hover': {
-                  transform: 'translateY(-5px)',
-                  boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
-                },
-              }}
-              elevation={2}
-            >
-              <CardActionArea>
-                <CardMedia
-                  component="img"
-                  height="140"
-                  image={service.image}
-                  alt={service.title}
-                />
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography gutterBottom variant="h5" component="h2">
-                    {service.title || service.name}
-                  </Typography>
-                  <Typography>
-                    {service.description}
-                  </Typography>
-                  {service.minPrice && (
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Starting from ₹{service.minPrice}
+      {/* Display services by category */}
+      {Object.keys(servicesByCategory).length > 0 ? (
+        Object.keys(servicesByCategory).map((category, index) => (
+          servicesByCategory[category].length > 0 && (
+            <Box key={category} sx={{ mb: 6 }}>
+              <Typography variant="h4" component="h2" gutterBottom sx={{ mt: 4 }}>
+                {category}
+              </Typography>
+              <Divider sx={{ mb: 3 }} />
+              <Grid container spacing={4}>
+                {servicesByCategory[category].map((service) => (
+                  <Grid item key={service.id || service._id} xs={12} sm={6} md={4}>
+                    <Card 
+                      sx={{ 
+                        height: '100%', 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                        '&:hover': {
+                          transform: 'translateY(-5px)',
+                          boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+                        },
+                      }}
+                      elevation={2}
+                    >
+                      <CardActionArea>
+                        <CardMedia
+                          component="img"
+                          height="140"
+                          image={service.image}
+                          alt={service.title || service.name}
+                        />
+                        <CardContent sx={{ flexGrow: 1 }}>
+                          <Typography gutterBottom variant="h5" component="h2">
+                            {service.title || service.name}
+                          </Typography>
+                          <Typography>
+                            {service.description}
+                          </Typography>
+                          {service.minPrice && (
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                              Starting from ₹{service.minPrice}
+                            </Typography>
+                          )}
+                        </CardContent>
+                      </CardActionArea>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          )
+        ))
+      ) : (
+        // Display all services if no categories are available
+        <Grid container spacing={4}>
+          {services.map((service) => (
+            <Grid item key={service.id || service._id} xs={12} sm={6} md={4}>
+              <Card 
+                sx={{ 
+                  height: '100%', 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-5px)',
+                    boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+                  },
+                }}
+                elevation={2}
+              >
+                <CardActionArea>
+                  <CardMedia
+                    component="img"
+                    height="140"
+                    image={service.image}
+                    alt={service.title || service.name}
+                  />
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <Typography gutterBottom variant="h5" component="h2">
+                      {service.title || service.name}
                     </Typography>
-                  )}
-                </CardContent>
-              </CardActionArea>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+                    <Typography>
+                      {service.description}
+                    </Typography>
+                    {service.minPrice && (
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        Starting from ₹{service.minPrice}
+                      </Typography>
+                    )}
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
 
       <Box sx={{ mt: 6, mb: 4 }}>
         <Typography variant="h4" align="center" gutterBottom>
