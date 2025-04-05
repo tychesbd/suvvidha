@@ -1,8 +1,32 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Container, Grid, Card, CardContent, CardMedia, CardActionArea, Box, CircularProgress, Divider } from '@mui/material';
+import { Typography, Container, Grid, Card, CardContent, CardMedia, CardActionArea, Box, CircularProgress, Divider, Button } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import { getServices } from '../../features/services/serviceSlice';
 import { getCategories } from '../../features/categories/categorySlice';
+
+// Styled components for service cards with hover effect
+const ServiceCard = styled(Card)(({ theme }) => ({
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+  '&:hover': {
+    transform: 'translateY(-8px)',
+    boxShadow: '0 12px 20px rgba(0,0,0,0.15)',
+  },
+}));
+
+const BookNowButton = styled(Button)(({ theme }) => ({
+  position: 'absolute',
+  bottom: '16px',
+  right: '16px',
+  opacity: 0,
+  transition: 'opacity 0.3s ease-in-out',
+  '.MuiCardActionArea-root:hover &': {
+    opacity: 1,
+  },
+}));
 
 // Fallback services in case API fails
 const fallbackServices = [
@@ -126,41 +150,32 @@ const Services = () => {
               <Grid container spacing={4}>
                 {servicesByCategory[category].map((service) => (
                   <Grid item key={service.id || service._id} xs={12} sm={6} md={4}>
-                    <Card 
-                      sx={{ 
-                        height: '100%', 
-                        display: 'flex', 
-                        flexDirection: 'column',
-                        transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-                        '&:hover': {
-                          transform: 'translateY(-5px)',
-                          boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
-                        },
-                      }}
-                      elevation={2}
-                    >
-                      <CardActionArea>
+                    <ServiceCard elevation={3}>
+                      <CardActionArea sx={{ height: '100%', position: 'relative' }}>
                         <CardMedia
                           component="img"
                           height="140"
                           image={service.image}
                           alt={service.title || service.name}
                         />
-                        <CardContent sx={{ flexGrow: 1 }}>
+                        <CardContent sx={{ flexGrow: 1, pb: 6 }}>
                           <Typography gutterBottom variant="h5" component="h2">
                             {service.title || service.name}
                           </Typography>
-                          <Typography>
+                          <Typography variant="body2" color="text.secondary" paragraph>
                             {service.description}
                           </Typography>
                           {service.minPrice && (
-                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                            <Typography variant="body1" color="primary" sx={{ fontWeight: 'bold' }}>
                               Starting from ₹{service.minPrice}
                             </Typography>
                           )}
                         </CardContent>
+                        <BookNowButton variant="contained" color="primary" size="small">
+                          Book Now
+                        </BookNowButton>
                       </CardActionArea>
-                    </Card>
+                    </ServiceCard>
                   </Grid>
                 ))}
               </Grid>
@@ -172,41 +187,32 @@ const Services = () => {
         <Grid container spacing={4}>
           {services.map((service) => (
             <Grid item key={service.id || service._id} xs={12} sm={6} md={4}>
-              <Card 
-                sx={{ 
-                  height: '100%', 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-5px)',
-                    boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
-                  },
-                }}
-                elevation={2}
-              >
-                <CardActionArea>
+              <ServiceCard elevation={3}>
+                <CardActionArea sx={{ height: '100%', position: 'relative' }}>
                   <CardMedia
                     component="img"
                     height="140"
                     image={service.image}
                     alt={service.title || service.name}
                   />
-                  <CardContent sx={{ flexGrow: 1 }}>
+                  <CardContent sx={{ flexGrow: 1, pb: 6 }}>
                     <Typography gutterBottom variant="h5" component="h2">
                       {service.title || service.name}
                     </Typography>
-                    <Typography>
+                    <Typography variant="body2" color="text.secondary" paragraph>
                       {service.description}
                     </Typography>
                     {service.minPrice && (
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      <Typography variant="body1" color="primary" sx={{ fontWeight: 'bold' }}>
                         Starting from ₹{service.minPrice}
                       </Typography>
                     )}
                   </CardContent>
+                  <BookNowButton variant="contained" color="primary" size="small">
+                    Book Now
+                  </BookNowButton>
                 </CardActionArea>
-              </Card>
+              </ServiceCard>
             </Grid>
           ))}
         </Grid>
