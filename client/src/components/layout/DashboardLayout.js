@@ -95,7 +95,7 @@ const DashboardLayout = ({ children, title, menuItems }) => {
     <div>
       <Toolbar>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <img src="/logo.svg" alt="Suvvidha Logo" height="40" />
+          <img src="/logo1.png" alt="Suvvidha Logo" height="40" />
         </Box>
       </Toolbar>
       <Divider />

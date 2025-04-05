@@ -78,7 +78,7 @@ const SimpleLayout = ({ children, title }) => {
       <AppBar position="fixed">
         <Toolbar>
           <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 0, mr: 3 }}>
-            <img src="/logo.svg" alt="Suvvidha Logo" height="40" />
+            <img src="/logo1.png" alt="Suvvidha Logo" height="40" />
             {/* Title removed as requested */}
           </Box>
           
