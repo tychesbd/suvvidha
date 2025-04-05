@@ -52,14 +52,25 @@ const SimpleLayout = ({ children, title }) => {
   const handleProfileClick = () => {
     handleCloseUserMenu();
     // Navigate to profile page based on user role
-    navigate(`/${userInfo.role}/profile`);
+    if (userInfo && userInfo.role) {
+      navigate(`/${userInfo.role}/profile`);
+    } else {
+      navigate('/login');
+    }
   };
 
   const handleDashboardClick = () => {
     handleCloseUserMenu();
     // Navigate to dashboard based on user role
-    navigate(`/${userInfo.role}`);
+    if (userInfo && userInfo.role) {
+      navigate(`/${userInfo.role}`);
+    } else {
+      navigate('/login');
+    }
   };
+
+  // Check if userInfo exists before accessing properties
+  const userRole = userInfo?.role || 'guest';
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -75,11 +86,11 @@ const SimpleLayout = ({ children, title }) => {
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             <Button
               component={Link}
-              to={`/${userInfo.role}/home`}
+              to={`/${userRole}/home`}
               sx={{
                 color: 'white',
                 mx: 1,
-                borderBottom: location.pathname.includes(`/${userInfo.role}/home`) ? '2px solid white' : 'none',
+                borderBottom: location.pathname.includes(`/${userRole}/home`) ? '2px solid white' : 'none',
                 borderRadius: 0,
                 paddingBottom: '4px'
               }}
@@ -89,11 +100,11 @@ const SimpleLayout = ({ children, title }) => {
             </Button>
             <Button
               component={Link}
-              to={`/${userInfo.role}/services`}
+              to={`/${userRole}/services`}
               sx={{
                 color: 'white',
                 mx: 1,
-                borderBottom: location.pathname.includes(`/${userInfo.role}/services`) ? '2px solid white' : 'none',
+                borderBottom: location.pathname.includes(`/${userRole}/services`) ? '2px solid white' : 'none',
                 borderRadius: 0,
                 paddingBottom: '4px'
               }}
@@ -103,11 +114,11 @@ const SimpleLayout = ({ children, title }) => {
             </Button>
             <Button
               component={Link}
-              to={`/${userInfo.role}/about`}
+              to={`/${userRole}/about`}
               sx={{
                 color: 'white',
                 mx: 1,
-                borderBottom: location.pathname.includes(`/${userInfo.role}/about`) ? '2px solid white' : 'none',
+                borderBottom: location.pathname.includes(`/${userRole}/about`) ? '2px solid white' : 'none',
                 borderRadius: 0,
                 paddingBottom: '4px'
               }}

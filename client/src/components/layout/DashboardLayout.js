@@ -64,22 +64,33 @@ const DashboardLayout = ({ children, title, menuItems }) => {
   };
 
   const handleLogout = () => {
-    dispatch(logout());
+    // First navigate to login page, then dispatch logout action
+    // This prevents errors from trying to access userInfo after it's set to null
     navigate('/login');
+    dispatch(logout());
   };
 
   const handleProfileClick = () => {
     handleCloseUserMenu();
     // Navigate to profile page based on user role
-    navigate(`/${userInfo.role}/profile`);
+    if (userInfo && userInfo.role) {
+      navigate(`/${userInfo.role}/profile`);
+    } else {
+      navigate('/login');
+    }
   };
 
   const handleDashboardClick = () => {
     handleCloseUserMenu();
     // Navigate to dashboard based on user role
-    navigate(`/${userInfo.role}`);
+    if (userInfo && userInfo.role) {
+      navigate(`/${userInfo.role}`);
+    } else {
+      navigate('/login');
+    }
   };
 
+  // Create a safe drawer component that handles null userInfo
   const drawer = (
     <div>
       <Toolbar>
@@ -89,9 +100,10 @@ const DashboardLayout = ({ children, title, menuItems }) => {
       </Toolbar>
       <Divider />
       <List>
-        {menuItems.map((item) => {
+        {menuItems && menuItems.map((item) => {
+          const userRole = userInfo?.role || 'guest';
           const isActive = location.pathname === item.path || 
-                         (item.path !== `/${userInfo.role}` && location.pathname.includes(item.path));
+                         (item.path !== `/${userRole}` && location.pathname.includes(item.path));
           return (
             <ListItem key={item.text} disablePadding onClick={() => {
               navigate(item.path);
@@ -147,11 +159,11 @@ const DashboardLayout = ({ children, title, menuItems }) => {
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             <Button
               component={Link}
-              to={`/${userInfo.role}/home`}
+              to={`/${userInfo?.role || 'guest'}/home`}
               sx={{
                 color: 'white',
                 mx: 1,
-                borderBottom: location.pathname.includes(`/${userInfo.role}/home`) ? '2px solid white' : 'none',
+                borderBottom: location.pathname.includes(`/${userInfo?.role || 'guest'}/home`) ? '2px solid white' : 'none',
                 borderRadius: 0,
                 paddingBottom: '4px'
               }}
@@ -161,11 +173,11 @@ const DashboardLayout = ({ children, title, menuItems }) => {
             </Button>
             <Button
               component={Link}
-              to={`/${userInfo.role}/services`}
+              to={`/${userInfo?.role || 'guest'}/services`}
               sx={{
                 color: 'white',
                 mx: 1,
-                borderBottom: location.pathname.includes(`/${userInfo.role}/services`) ? '2px solid white' : 'none',
+                borderBottom: location.pathname.includes(`/${userInfo?.role || 'guest'}/services`) ? '2px solid white' : 'none',
                 borderRadius: 0,
                 paddingBottom: '4px'
               }}
@@ -175,11 +187,11 @@ const DashboardLayout = ({ children, title, menuItems }) => {
             </Button>
             <Button
               component={Link}
-              to={`/${userInfo.role}/about`}
+              to={`/${userInfo?.role || 'guest'}/about`}
               sx={{
                 color: 'white',
                 mx: 1,
-                borderBottom: location.pathname.includes(`/${userInfo.role}/about`) ? '2px solid white' : 'none',
+                borderBottom: location.pathname.includes(`/${userInfo?.role || 'guest'}/about`) ? '2px solid white' : 'none',
                 borderRadius: 0,
                 paddingBottom: '4px'
               }}

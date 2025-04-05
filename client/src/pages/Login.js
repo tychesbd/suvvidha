@@ -42,12 +42,15 @@ const Login = () => {
 
     if (isSuccess || userInfo) {
       // Redirect based on user role
-      if (userInfo.role === 'admin') {
+      if (userInfo && userInfo.role === 'admin') {
         navigate('/admin');
-      } else if (userInfo.role === 'vendor') {
+      } else if (userInfo && userInfo.role === 'vendor') {
         navigate('/vendor');
-      } else {
+      } else if (userInfo && userInfo.role === 'customer') {
         navigate('/customer');
+      } else {
+        // If userInfo is null or role is undefined, redirect to login
+        navigate('/login');
       }
     }
 
