@@ -74,16 +74,40 @@ const BookingModal = ({ open, onClose, service }) => {
       setLoading(true);
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          // Here you would typically use a reverse geocoding service
-          // to convert coordinates to an address
-          // For demo purposes, we'll just use the coordinates
-          const location = `Lat: ${position.coords.latitude.toFixed(4)}, Long: ${position.coords.longitude.toFixed(4)}`;
-          setFormData({
-            ...formData,
-            location,
-            locationType: 'current'
-          });
-          setLoading(false);
+          // Use reverse geocoding to convert coordinates to an address
+          const { latitude, longitude } = position.coords;
+          
+          // Store coordinates for backend processing
+          const coordinates = { latitude, longitude };
+          
+          // Use Nominatim OpenStreetMap API for reverse geocoding (free and doesn't require API key)
+          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`)
+            .then(response => response.json())
+            .then(data => {
+              // Format the address from the response
+              const address = data.display_name || 
+                `${data.address.road || ''}, ${data.address.suburb || ''}, ${data.address.city || ''}`;
+              
+              setFormData({
+                ...formData,
+                location: address,
+                locationType: 'current',
+                coordinates: JSON.stringify(coordinates)
+              });
+              setLoading(false);
+            })
+            .catch(error => {
+              console.error('Error in reverse geocoding:', error);
+              // Fallback to a more user-friendly location format if geocoding fails
+              const location = `Near location at ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+              setFormData({
+                ...formData,
+                location,
+                locationType: 'current',
+                coordinates: JSON.stringify(coordinates)
+              });
+              setLoading(false);
+            });
         },
         (error) => {
           console.error('Error getting location:', error);
@@ -173,7 +197,8 @@ const BookingModal = ({ open, onClose, service }) => {
       phoneNumber: '',
       pincode: '',
       location: '',
-      locationType: 'manual'
+      locationType: 'manual',
+      coordinates: null
     });
     setErrors({});
   };
