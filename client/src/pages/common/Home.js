@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getContentByType } from '../../features/content/contentSlice';
 import { getServices } from '../../features/services/serviceSlice';
 import { getCategories } from '../../features/categories/categorySlice';
+import BookingModal from '../../components/modals/BookingModal';
 
 // Styled components
 const HeroSection = styled(Box)(({ theme, backgroundImage }) => ({
@@ -120,6 +121,10 @@ const Home = () => {
   const [adsContent, setAdsContent] = useState(null);
   const [servicesByCategory, setServicesByCategory] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  
+  // State for booking modal
+  const [openBookingModal, setOpenBookingModal] = useState(false);
+  const [selectedService, setSelectedService] = useState(null);
 
   // Fetch hero content
   useEffect(() => {
@@ -256,7 +261,16 @@ const Home = () => {
                             </Typography>
                           )}
                         </CardContent>
-                        <BookNowButton variant="contained" color="primary" size="small">
+                        <BookNowButton 
+                          variant="contained" 
+                          color="primary" 
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedService(service);
+                            setOpenBookingModal(true);
+                          }}
+                        >
                           Book Now
                         </BookNowButton>
                       </CardActionArea>
@@ -345,6 +359,13 @@ const Home = () => {
           </Typography>
         </Container>
       </Footer>
+      
+      {/* Booking Modal */}
+      <BookingModal 
+        open={openBookingModal} 
+        onClose={() => setOpenBookingModal(false)} 
+        service={selectedService}
+      />
     </Box>
   );
 };

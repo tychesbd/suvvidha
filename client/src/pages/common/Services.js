@@ -4,6 +4,7 @@ import { styled } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import { getServices } from '../../features/services/serviceSlice';
 import { getCategories } from '../../features/categories/categorySlice';
+import BookingModal from '../../components/modals/BookingModal';
 
 // Styled components for service cards with hover effect
 const ServiceCard = styled(Card)(({ theme }) => ({
@@ -75,6 +76,10 @@ const Services = () => {
   const [services, setServices] = useState([]);
   const [servicesByCategory, setServicesByCategory] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  
+  // State for booking modal
+  const [openBookingModal, setOpenBookingModal] = useState(false);
+  const [selectedService, setSelectedService] = useState(null);
 
   // Fetch services and categories
   useEffect(() => {
@@ -171,7 +176,16 @@ const Services = () => {
                             </Typography>
                           )}
                         </CardContent>
-                        <BookNowButton variant="contained" color="primary" size="small">
+                        <BookNowButton 
+                          variant="contained" 
+                          color="primary" 
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedService(service);
+                            setOpenBookingModal(true);
+                          }}
+                        >
                           Book Now
                         </BookNowButton>
                       </CardActionArea>
@@ -208,7 +222,16 @@ const Services = () => {
                       </Typography>
                     )}
                   </CardContent>
-                  <BookNowButton variant="contained" color="primary" size="small">
+                  <BookNowButton 
+                    variant="contained" 
+                    color="primary" 
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedService(service);
+                      setOpenBookingModal(true);
+                    }}
+                  >
                     Book Now
                   </BookNowButton>
                 </CardActionArea>
@@ -226,6 +249,13 @@ const Services = () => {
           Contact us to discuss your specific requirements and get a personalized solution.
         </Typography>
       </Box>
+      
+      {/* Booking Modal */}
+      <BookingModal 
+        open={openBookingModal} 
+        onClose={() => setOpenBookingModal(false)} 
+        service={selectedService}
+      />
     </Container>
   );
 };
