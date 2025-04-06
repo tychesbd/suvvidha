@@ -29,6 +29,7 @@ import Users from './Users';
 import AdminServices from './Services';
 import AdminCategories from './Categories';
 import ContentManagement from './ContentManagement';
+import Bookings from './Bookings';
 
 // Common pages
 import Home from '../common/Home';
@@ -189,7 +190,7 @@ const AdminDashboard = () => {
     {
       text: 'Bookings',
       icon: <CalendarTodayIcon />,
-      path: '/admin/orders',
+      path: '/admin/bookings',
     },
     {
       text: 'Vendors',
@@ -236,9 +237,9 @@ const AdminDashboard = () => {
           <ContentManagement />
         </DashboardLayout>
       } />
-      <Route path="/orders" element={
+      <Route path="/bookings" element={
         <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
-          <Typography variant="h4">Orders Management</Typography>
+          <Bookings />
         </DashboardLayout>
       } />
       <Route path="/settings" element={

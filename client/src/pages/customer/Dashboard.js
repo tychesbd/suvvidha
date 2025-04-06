@@ -19,6 +19,7 @@ import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices
 // Components
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import SimpleLayout from '../../components/layout/SimpleLayout';
+import BookingList from '../../components/booking/BookingList';
 
 // Dashboard sub-pages
 import Profile from './Profile';
@@ -74,13 +75,13 @@ const CustomerHome = () => {
 
       <Grid container spacing={4} sx={{ mt: 2 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Orders" value="5" icon={<ShoppingCartIcon fontSize="large" />} />
+          <StatsCard title="Booking" value="5" icon={<ShoppingCartIcon fontSize="large" />} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatsCard title="Wishlist" value="12" icon={<FavoriteIcon fontSize="large" />} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Recent Views" value="24" icon={<HistoryIcon fontSize="large" />} />
+          <StatsCard title="Booking History" value="12" icon={<HistoryIcon fontSize="large" />} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatsCard title="Profile" value="1" icon={<PersonIcon fontSize="large" />} />
@@ -88,11 +89,11 @@ const CustomerHome = () => {
       </Grid>
 
       <Typography variant="h5" sx={{ mt: 6, mb: 3 }}>
-        Recent Orders
+        Recent Bookings
       </Typography>
       <Paper elevation={2} sx={{ p: 3 }}>
         <Typography variant="body1" color="text.secondary" align="center">
-          You don't have any recent orders.
+          You don't have any recent bookings.
         </Typography>
       </Paper>
 
@@ -151,14 +152,14 @@ const CustomerDashboard = () => {
       path: '/customer',
     },
     {
-      text: 'Orders',
+      text: 'Booking',
       icon: <ShoppingCartIcon />,
-      path: '/customer/orders',
+      path: '/customer/booking',
     },
     {
-      text: 'Wishlist',
-      icon: <FavoriteIcon />,
-      path: '/customer/wishlist',
+      text: 'Booking History',
+      icon: <HistoryIcon />,
+      path: '/customer/booking-history',
     },
     {
       text: 'Profile',
@@ -180,14 +181,22 @@ const CustomerDashboard = () => {
           <Profile />
         </DashboardLayout>
       } />
-      <Route path="/orders" element={
+      <Route path="/booking" element={
         <DashboardLayout title="Customer Dashboard" menuItems={menuItems}>
-          <Typography variant="h4">Orders Page</Typography>
+          <Typography variant="h4">Booking</Typography>
+          <Typography variant="subtitle1" color="text.secondary" paragraph>
+            View your in-progress bookings
+          </Typography>
+          <BookingList type="active" />
         </DashboardLayout>
       } />
-      <Route path="/wishlist" element={
+      <Route path="/booking-history" element={
         <DashboardLayout title="Customer Dashboard" menuItems={menuItems}>
-          <Typography variant="h4">Wishlist Page</Typography>
+          <Typography variant="h4">Booking History</Typography>
+          <Typography variant="subtitle1" color="text.secondary" paragraph>
+            View your completed and cancelled bookings
+          </Typography>
+          <BookingList type="history" />
         </DashboardLayout>
       } />
       
