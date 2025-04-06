@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Typography,
   Paper,
@@ -55,40 +56,45 @@ const StatusChip = styled(Chip)(({ theme, status }) => {
   };
 });
 
-// Sample data - this would come from an API in a real application
-const sampleBookings = [
-  {
-    id: 'BK-001',
-    serviceName: 'Home Cleaning',
-    dateTime: '2023-10-15 10:00 AM',
-    status: 'in-progress',
-  },
-  {
-    id: 'BK-002',
-    serviceName: 'Plumbing Repair',
-    dateTime: '2023-10-18 02:30 PM',
-    status: 'pending',
-  },
-  {
-    id: 'BK-003',
-    serviceName: 'Electrical Work',
-    dateTime: '2023-10-10 09:15 AM',
-    status: 'completed',
-  },
-  {
-    id: 'BK-004',
-    serviceName: 'Painting Service',
-    dateTime: '2023-10-05 11:00 AM',
-    status: 'cancelled',
-  },
-];
+
 
 const BookingList = ({ type = 'active' }) => {
-  const [bookings, setBookings] = useState(sampleBookings);
-  const [loading, setLoading] = useState(false);
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [cancelReason, setCancelReason] = useState('');
+  
+  // Fetch bookings from API
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        
+        if (!userInfo || !userInfo.token) {
+          setError('You must be logged in to view bookings');
+          setLoading(false);
+          return;
+        }
+        
+        const config = {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        };
+        
+        const response = await axios.get('/api/bookings', config);
+        setBookings(response.data);
+        setLoading(false);
+      } catch (error) {
+        setError(error.response?.data?.message || 'Failed to fetch bookings');
+        setLoading(false);
+      }
+    };
+    
+    fetchBookings();
+  }, []);
   
   // Filter bookings based on type
   const filteredBookings = bookings.filter(booking => {
@@ -114,16 +120,33 @@ const BookingList = ({ type = 'active' }) => {
   };
 
   // Handle booking cancellation
-  const handleCancelBooking = () => {
+  const handleCancelBooking = async () => {
     if (!selectedBooking || !cancelReason) return;
     
     setLoading(true);
     
-    // In a real application, this would be an API call
-    setTimeout(() => {
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+      
+      if (!userInfo || !userInfo.token) {
+        setError('You must be logged in to cancel a booking');
+        setLoading(false);
+        return;
+      }
+      
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      };
+      
+      // Make API call to cancel booking
+      await axios.put(`/api/bookings/${selectedBooking._id}/cancel`, { cancelReason }, config);
+      
       // Update the booking status in the local state
       const updatedBookings = bookings.map(booking => {
-        if (booking.id === selectedBooking.id) {
+        if (booking._id === selectedBooking._id) {
           return { ...booking, status: 'cancelled', cancelReason };
         }
         return booking;
@@ -132,9 +155,33 @@ const BookingList = ({ type = 'active' }) => {
       setBookings(updatedBookings);
       setLoading(false);
       handleCancelDialogClose();
-    }, 1000);
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to cancel booking');
+      setLoading(false);
+    }
   };
 
+  // Render loading state
+  if (loading) {
+    return (
+      <Paper elevation={2} sx={{ p: 3, mt: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress size={40} sx={{ mr: 2 }} />
+        <Typography variant="body1">Loading bookings...</Typography>
+      </Paper>
+    );
+  }
+  
+  // Render error state
+  if (error) {
+    return (
+      <Paper elevation={2} sx={{ p: 3, mt: 2 }}>
+        <Typography variant="body1" color="error" align="center">
+          {error}
+        </Typography>
+      </Paper>
+    );
+  }
+  
   // Render empty state if no bookings
   if (filteredBookings.length === 0) {
     return (
@@ -163,10 +210,10 @@ const BookingList = ({ type = 'active' }) => {
           </TableHead>
           <TableBody>
             {filteredBookings.map((booking) => (
-              <TableRow key={booking.id} hover>
-                <TableCell>{booking.id}</TableCell>
+              <TableRow key={booking._id} hover>
+                <TableCell>{booking._id}</TableCell>
                 <TableCell>{booking.serviceName}</TableCell>
-                <TableCell>{booking.dateTime}</TableCell>
+                <TableCell>{new Date(booking.dateTime).toLocaleString()}</TableCell>
                 <TableCell>
                   <StatusChip 
                     label={booking.status} 
@@ -181,7 +228,7 @@ const BookingList = ({ type = 'active' }) => {
                       color="error" 
                       size="small"
                       onClick={() => handleCancelClick(booking)}
-                      disabled={booking.status === 'cancelled'}
+                      disabled={booking.status === 'cancelled' || booking.status === 'completed'}
                     >
                       Cancel
                     </Button>

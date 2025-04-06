@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Typography,
   Box,
@@ -19,7 +20,8 @@ import {
   IconButton,
   Dialog,
   DialogContent,
-  Divider
+  Divider,
+  CircularProgress
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
@@ -64,56 +66,96 @@ const StatusChip = styled(Chip)(({ theme, status }) => {
   };
 });
 
-// Sample data - this would come from an API in a real application
-const sampleBookings = [
-  {
-    id: 'BK-001',
-    customerName: 'John Doe',
-    serviceName: 'Home Cleaning',
-    dateTime: '2023-10-15 10:00 AM',
-    status: 'pending',
-    pincode: '400001'
-  },
-  {
-    id: 'BK-002',
-    customerName: 'Jane Smith',
-    serviceName: 'Plumbing Repair',
-    dateTime: '2023-10-18 02:30 PM',
-    status: 'in-progress',
-    pincode: '400002'
-  },
-  {
-    id: 'BK-003',
-    customerName: 'Mike Johnson',
-    serviceName: 'Electrical Work',
-    dateTime: '2023-10-10 09:15 AM',
-    status: 'completed',
-    pincode: '400003'
-  },
-  {
-    id: 'BK-004',
-    customerName: 'Sarah Williams',
-    serviceName: 'Painting Service',
-    dateTime: '2023-10-05 11:00 AM',
-    status: 'cancelled',
-    pincode: '400001'
-  },
-  {
-    id: 'BK-005',
-    customerName: 'Robert Brown',
-    serviceName: 'Appliance Repair',
-    dateTime: '2023-10-20 01:00 PM',
-    status: 'pending',
-    pincode: '400004'
-  },
-];
+
 
 const Bookings = () => {
-  const [bookings, setBookings] = useState(sampleBookings);
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState(null);
+  
+  // Fetch all bookings
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        
+        if (!userInfo || !userInfo.token || userInfo.role !== 'admin') {
+          setError('You must be logged in as an admin to view bookings');
+          setLoading(false);
+          return;
+        }
+        
+        const config = {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        };
+        
+        // Make API request to get admin bookings
+        console.log('Making API request with token:', userInfo.token.substring(0, 10) + '...');
+        console.log('User role:', userInfo.role);
+        
+        const response = await axios.get('/api/bookings/admin', config);
+        
+        // Process the response data
+        console.log('Admin bookings API response:', response.data);
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.data) {
+          console.error('No data received from API');
+          setError('No booking data received from server');
+          setLoading(false);
+          return;
+        }
+        
+        // Ensure we're working with an array
+        const bookingsData = Array.isArray(response.data) ? response.data : [];
+        console.log('Processed bookings:', bookingsData.length, 'bookings loaded');
+        
+        if (bookingsData.length === 0) {
+          console.log('No bookings found in the response data');
+          // Don't set error, just show empty state
+        }
+        
+        // Set the bookings state
+        setBookings(bookingsData);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching admin bookings:', error);
+        
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.error('Response data:', error.response.data);
+          console.error('Response status:', error.response.status);
+          console.error('Response headers:', error.response.headers);
+          
+          if (error.response.status === 401) {
+            setError('Authentication error: You may not have admin privileges or your session has expired');
+          } else {
+            setError(error.response.data?.message || `Server error: ${error.response.status}`);
+          }
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.error('Request made but no response received:', error.request);
+          setError('Network error: No response received from server');
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.error('Error setting up request:', error.message);
+          setError(`Request setup error: ${error.message}`);
+        }
+        
+        setLoading(false);
+      }
+    };
+    
+    fetchBookings();
+  }, []);
   
   // Handle search
   const handleSearch = (e) => {
@@ -127,6 +169,10 @@ const Bookings = () => {
 
   // Handle view details
   const handleViewDetails = (bookingId) => {
+    if (!bookingId) {
+      console.error('Invalid booking ID');
+      return;
+    }
     setSelectedBookingId(bookingId);
     setDetailsDialogOpen(true);
   };
@@ -138,21 +184,57 @@ const Bookings = () => {
 
   // Filter bookings based on search query and active tab
   const filteredBookings = bookings.filter(booking => {
-    const matchesSearch = 
-      booking.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      booking.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      booking.serviceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      booking.pincode.includes(searchQuery);
+    // Skip invalid booking objects
+    if (!booking || typeof booking !== 'object') {
+      return false;
+    }
+
+    // Safely access booking properties
+    const bookingId = booking._id ? booking._id.toString().toLowerCase() : '';
+    const customerName = booking.customer && booking.customer.name ? booking.customer.name.toLowerCase() : '';
+    const serviceNameLower = booking.serviceName ? booking.serviceName.toLowerCase() : '';
+    const pincode = booking.customer && booking.customer.pincode ? booking.customer.pincode : '';
+    const searchQueryLower = searchQuery.toLowerCase();
     
+    const matchesSearch = 
+      bookingId.includes(searchQueryLower) ||
+      customerName.includes(searchQueryLower) ||
+      serviceNameLower.includes(searchQueryLower) ||
+      pincode.includes(searchQuery);
+    
+    const bookingStatus = booking.status || 'pending';
     const matchesTab = 
       activeTab === 'all' ||
-      (activeTab === 'pending' && booking.status === 'pending') ||
-      (activeTab === 'in-progress' && booking.status === 'in-progress') ||
-      (activeTab === 'completed' && booking.status === 'completed') ||
-      (activeTab === 'cancelled' && booking.status === 'cancelled');
+      (activeTab === 'pending' && bookingStatus === 'pending') ||
+      (activeTab === 'in-progress' && bookingStatus === 'in-progress') ||
+      (activeTab === 'completed' && bookingStatus === 'completed') ||
+      (activeTab === 'cancelled' && bookingStatus === 'cancelled');
     
     return matchesSearch && matchesTab;
   });
+  
+  console.log('Filtered bookings:', filteredBookings.length, 'out of', bookings.length);
+  
+  // Render loading state
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress size={60} />
+        <Typography variant="h6" sx={{ ml: 2 }}>Loading bookings...</Typography>
+      </Box>
+    );
+  }
+  
+  // Render error state
+  if (error) {
+    return (
+      <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+        <Typography variant="body1" color="error" align="center">
+          {error}
+        </Typography>
+      </Paper>
+    );
+  }
 
   return (
     <Box>
@@ -215,16 +297,16 @@ const Bookings = () => {
           <TableBody>
             {filteredBookings.length > 0 ? (
               filteredBookings.map((booking) => (
-                <TableRow key={booking.id} hover>
-                  <TableCell>{booking.id}</TableCell>
-                  <TableCell>{booking.customerName}</TableCell>
-                  <TableCell>{booking.serviceName}</TableCell>
-                  <TableCell>{booking.dateTime}</TableCell>
-                  <TableCell>{booking.pincode}</TableCell>
+                <TableRow key={booking._id} hover>
+                  <TableCell>{booking._id}</TableCell>
+                  <TableCell>{booking.customer && booking.customer.name ? booking.customer.name : 'N/A'}</TableCell>
+                  <TableCell>{booking.serviceName || 'N/A'}</TableCell>
+                  <TableCell>{booking.dateTime ? new Date(booking.dateTime).toLocaleString() : 'N/A'}</TableCell>
+                  <TableCell>{booking.customer && booking.customer.pincode ? booking.customer.pincode : 'N/A'}</TableCell>
                   <TableCell>
                     <StatusChip 
-                      label={booking.status} 
-                      status={booking.status} 
+                      label={booking.status || 'pending'} 
+                      status={booking.status || 'pending'} 
                       size="small" 
                     />
                   </TableCell>
@@ -232,7 +314,7 @@ const Bookings = () => {
                     <IconButton 
                       color="primary" 
                       size="small"
-                      onClick={() => handleViewDetails(booking.id)}
+                      onClick={() => handleViewDetails(booking._id)}
                     >
                       <VisibilityIcon />
                     </IconButton>

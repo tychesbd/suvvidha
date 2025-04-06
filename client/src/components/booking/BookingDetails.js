@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Typography,
   Paper,
@@ -22,7 +23,8 @@ import {
   Avatar,
   Rating,
   InputAdornment,
-  IconButton
+  IconButton,
+  Alert
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
@@ -78,76 +80,17 @@ const InfoItem = ({ icon, label, value }) => (
   </Box>
 );
 
-// Sample data - this would come from an API in a real application
-const sampleBooking = {
-  id: 'BK-001',
-  serviceName: 'Home Cleaning',
-  dateTime: '2023-10-15 10:00 AM',
-  status: 'pending',
-  customer: {
-    name: 'John Doe',
-    phone: '9876543210',
-    pincode: '400001',
-    location: '123 Main Street, Mumbai, Maharashtra'
-  },
-  service: {
-    id: 'SRV-001',
-    name: 'Home Cleaning',
-    description: 'Professional home cleaning services',
-    price: '₹1,200'
-  },
-  createdAt: '2023-10-10 09:30 AM'
-};
 
-// Sample vendors data
-const sampleVendors = [
-  {
-    id: 'V-001',
-    name: 'Rahul Sharma',
-    rating: 4.8,
-    reviews: 24,
-    pincode: '400001',
-    distance: '2.5 km',
-    phone: '9876543210'
-  },
-  {
-    id: 'V-002',
-    name: 'Priya Patel',
-    rating: 4.5,
-    reviews: 18,
-    pincode: '400002',
-    distance: '3.2 km',
-    phone: '9876543211'
-  },
-  {
-    id: 'V-003',
-    name: 'Amit Kumar',
-    rating: 4.9,
-    reviews: 32,
-    pincode: '400001',
-    distance: '1.8 km',
-    phone: '9876543212'
-  },
-  {
-    id: 'V-004',
-    name: 'Sneha Gupta',
-    rating: 4.2,
-    reviews: 15,
-    pincode: '400003',
-    distance: '4.5 km',
-    phone: '9876543213'
-  }
-];
 
 const BookingDetails = ({ bookingId }) => {
-  // In a real application, you would fetch the booking details using the bookingId
-  const [booking, setBooking] = useState(sampleBooking);
-  const [loading, setLoading] = useState(false);
+  const [booking, setBooking] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [assignVendorDialogOpen, setAssignVendorDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState('');
   const [statusNote, setStatusNote] = useState('');
-  const [vendors, setVendors] = useState(sampleVendors);
+  const [vendors, setVendors] = useState([]);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [vendorSearchQuery, setVendorSearchQuery] = useState('');
   const [vendorFilters, setVendorFilters] = useState({
@@ -155,6 +98,112 @@ const BookingDetails = ({ bookingId }) => {
     minRating: 0
   });
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+  
+  // Fetch booking details
+  useEffect(() => {
+    const fetchBookingDetails = async () => {
+      if (!bookingId) return;
+      
+      try {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        
+        if (!userInfo || !userInfo.token) {
+          setError('You must be logged in to view booking details');
+          setLoading(false);
+          return;
+        }
+        
+        const config = {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        };
+        
+        const response = await axios.get(`/api/bookings/${bookingId}`, config);
+        setBooking(response.data);
+        setNewStatus(response.data.status);
+        setLoading(false);
+      } catch (error) {
+        setError(error.response?.data?.message || 'Failed to fetch booking details');
+        setLoading(false);
+      }
+    };
+    
+    fetchBookingDetails();
+  }, [bookingId]);
+  
+  // Fetch vendors when assign vendor dialog opens
+  const fetchVendors = async () => {
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+      
+      if (!userInfo || !userInfo.token) {
+        setError('You must be logged in to view vendors');
+        return;
+      }
+      
+      const config = {
+        headers: {
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      };
+      
+      // In a real application, you would fetch vendors from an API
+      // For now, we'll simulate it with a timeout
+      setLoading(true);
+      
+      // This would be replaced with an actual API call
+      // const response = await axios.get('/api/vendors', config);
+      // setVendors(response.data);
+      
+      // Simulating API call for now
+      setTimeout(() => {
+        const mockVendors = [
+          {
+            _id: 'V-001',
+            name: 'Rahul Sharma',
+            rating: 4.8,
+            reviews: 24,
+            pincode: '400001',
+            distance: '2.5 km',
+            phone: '9876543210'
+          },
+          {
+            _id: 'V-002',
+            name: 'Priya Patel',
+            rating: 4.5,
+            reviews: 18,
+            pincode: '400002',
+            distance: '3.2 km',
+            phone: '9876543211'
+          },
+          {
+            _id: 'V-003',
+            name: 'Amit Kumar',
+            rating: 4.9,
+            reviews: 32,
+            pincode: '400001',
+            distance: '1.8 km',
+            phone: '9876543212'
+          },
+          {
+            _id: 'V-004',
+            name: 'Sneha Gupta',
+            rating: 4.2,
+            reviews: 15,
+            pincode: '400003',
+            distance: '4.5 km',
+            phone: '9876543213'
+          }
+        ];
+        setVendors(mockVendors);
+        setLoading(false);
+      }, 1000);
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to fetch vendors');
+      setLoading(false);
+    }
+  };
 
   // Handle status change dialog open
   const handleStatusChangeClick = () => {
@@ -169,20 +218,40 @@ const BookingDetails = ({ bookingId }) => {
   };
 
   // Handle status update
-  const handleStatusUpdate = () => {
+  const handleStatusUpdate = async () => {
     if (!newStatus) return;
     
     setLoading(true);
     
-    // In a real application, this would be an API call
-    setTimeout(() => {
-      setBooking({
-        ...booking,
-        status: newStatus
-      });
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+      
+      if (!userInfo || !userInfo.token) {
+        setError('You must be logged in to update booking status');
+        setLoading(false);
+        return;
+      }
+      
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      };
+      
+      const response = await axios.put(
+        `/api/bookings/${booking._id}/status`,
+        { status: newStatus, statusNote },
+        config
+      );
+      
+      setBooking(response.data);
       setLoading(false);
       setStatusDialogOpen(false);
-    }, 1000);
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to update booking status');
+      setLoading(false);
+    }
   };
 
   // Handle assign vendor dialog open
@@ -194,6 +263,7 @@ const BookingDetails = ({ bookingId }) => {
       minRating: 0
     });
     setAssignVendorDialogOpen(true);
+    fetchVendors();
   };
 
   // Handle assign vendor dialog close
@@ -207,21 +277,40 @@ const BookingDetails = ({ bookingId }) => {
   };
 
   // Handle vendor assignment
-  const handleAssignVendor = () => {
+  const handleAssignVendor = async () => {
     if (!selectedVendor) return;
     
     setLoading(true);
     
-    // In a real application, this would be an API call
-    setTimeout(() => {
-      setBooking({
-        ...booking,
-        vendor: selectedVendor,
-        status: 'in-progress'
-      });
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+      
+      if (!userInfo || !userInfo.token) {
+        setError('You must be logged in to assign a vendor');
+        setLoading(false);
+        return;
+      }
+      
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      };
+      
+      const response = await axios.put(
+        `/api/bookings/${booking._id}/assign`,
+        { vendorId: selectedVendor._id },
+        config
+      );
+      
+      setBooking(response.data);
       setLoading(false);
       setAssignVendorDialogOpen(false);
-    }, 1000);
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to assign vendor');
+      setLoading(false);
+    }
   };
 
   // Handle vendor search
@@ -254,6 +343,36 @@ const BookingDetails = ({ bookingId }) => {
     return matchesSearch && matchesPincode && matchesRating;
   });
 
+  // Render loading state
+  if (loading && !booking) {
+    return (
+      <Paper elevation={2} sx={{ p: 3, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress size={40} sx={{ mr: 2 }} />
+        <Typography variant="body1">Loading booking details...</Typography>
+      </Paper>
+    );
+  }
+  
+  // Render error state
+  if (error) {
+    return (
+      <Paper elevation={2} sx={{ p: 3 }}>
+        <Alert severity="error">{error}</Alert>
+      </Paper>
+    );
+  }
+  
+  // Render if booking not found
+  if (!booking) {
+    return (
+      <Paper elevation={2} sx={{ p: 3 }}>
+        <Typography variant="body1" color="text.secondary" align="center">
+          Booking not found or you don't have permission to view it.
+        </Typography>
+      </Paper>
+    );
+  }
+  
   return (
     <Box>
       <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
@@ -274,7 +393,7 @@ const BookingDetails = ({ bookingId }) => {
             <InfoItem 
               icon={<CalendarTodayIcon />}
               label="Booking ID"
-              value={booking.id}
+              value={booking._id}
             />
             
             <InfoItem 
@@ -286,13 +405,13 @@ const BookingDetails = ({ bookingId }) => {
             <InfoItem 
               icon={<AccessTimeIcon />}
               label="Date & Time"
-              value={booking.dateTime}
+              value={new Date(booking.dateTime).toLocaleString()}
             />
             
             <InfoItem 
               icon={<CalendarTodayIcon />}
               label="Created On"
-              value={booking.createdAt}
+              value={new Date(booking.createdAt).toLocaleString()}
             />
           </Grid>
           
@@ -308,7 +427,7 @@ const BookingDetails = ({ bookingId }) => {
             <InfoItem 
               icon={<PhoneIcon />}
               label="Phone"
-              value={booking.customer.phone}
+              value={booking.customer.phoneNumber}
             />
             
             <InfoItem 
@@ -490,13 +609,13 @@ const BookingDetails = ({ bookingId }) => {
           ) : (
             <Grid container spacing={2} sx={{ mt: 1 }}>
               {filteredVendors.map((vendor) => (
-                <Grid item xs={12} sm={6} key={vendor.id}>
+                <Grid item xs={12} sm={6} key={vendor._id}>
                   <Card 
                     variant="outlined" 
                     sx={{ 
                       cursor: 'pointer',
-                      border: selectedVendor?.id === vendor.id ? '2px solid' : '1px solid',
-                      borderColor: selectedVendor?.id === vendor.id ? 'primary.main' : 'divider',
+                      border: selectedVendor?._id === vendor._id ? '2px solid' : '1px solid',
+                      borderColor: selectedVendor?._id === vendor._id ? 'primary.main' : 'divider',
                     }}
                     onClick={() => handleVendorSelect(vendor)}
                   >
@@ -516,7 +635,7 @@ const BookingDetails = ({ bookingId }) => {
                             </Box>
                           </Box>
                         </Box>
-                        {selectedVendor?.id === vendor.id && (
+                        {selectedVendor?._id === vendor._id && (
                           <CheckCircleIcon color="primary" />
                         )}
                       </Box>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import {
   Dialog,
   DialogTitle,
@@ -167,13 +168,44 @@ const BookingModal = ({ open, onClose, service }) => {
   };
 
   // Handle form submission
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validateForm()) {
       setLoading(true);
       
-      // Here you would typically make an API call to submit the booking
-      // For demo purposes, we'll just simulate a successful submission
-      setTimeout(() => {
+      try {
+        // Get token from localStorage
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        
+        if (!userInfo || !userInfo.token) {
+          setSnackbar({
+            open: true,
+            message: 'You must be logged in to book a service',
+            severity: 'error'
+          });
+          setLoading(false);
+          return;
+        }
+        
+        const config = {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        };
+        
+        // Prepare booking data
+        const bookingData = {
+          name: formData.name,
+          phoneNumber: formData.phoneNumber,
+          pincode: formData.pincode,
+          location: formData.location,
+          coordinates: formData.coordinates,
+          serviceId: service._id,
+        };
+        
+        // Make API call to create booking
+        const response = await axios.post('/api/bookings', bookingData, config);
+        
         setLoading(false);
         setSnackbar({
           open: true,
@@ -186,9 +218,17 @@ const BookingModal = ({ open, onClose, service }) => {
           resetForm();
           onClose();
         }, 1500);
-      }, 1000);
+      } catch (error) {
+        setLoading(false);
+        setSnackbar({
+          open: true,
+          message: error.response?.data?.message || 'Failed to create booking. Please try again.',
+          severity: 'error'
+        });
+      }
     }
   };
+
 
   // Reset form
   const resetForm = () => {
