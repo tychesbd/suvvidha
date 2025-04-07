@@ -46,6 +46,7 @@ const Profile = () => {
     email: userInfo?.email || '',
     phone: userInfo?.phone || '',
     address: userInfo?.address || '',
+    pincode: userInfo?.pincode || '',
     yearsOfExperience: userInfo?.yearsOfExperience || 0,
     serviceExpertise: userInfo?.serviceExpertise || [],
   });
@@ -121,6 +122,7 @@ const Profile = () => {
       email: userInfo?.email || '',
       phone: userInfo?.phone || '',
       address: userInfo?.address || '',
+      pincode: userInfo?.pincode || '',
       yearsOfExperience: userInfo?.yearsOfExperience || 0,
       serviceExpertise: userInfo?.serviceExpertise || [],
     });
@@ -135,6 +137,7 @@ const Profile = () => {
     formDataToSend.append('email', email);
     formDataToSend.append('phone', phone);
     formDataToSend.append('address', address);
+    formDataToSend.append('pincode', formData.pincode);
     formDataToSend.append('yearsOfExperience', yearsOfExperience);
     
     // Append service expertise as comma-separated string
@@ -236,6 +239,17 @@ const Profile = () => {
                       name="phone"
                       value={phone}
                       onChange={onChange}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Pincode"
+                      name="pincode"
+                      value={formData.pincode}
+                      onChange={onChange}
+                      inputProps={{ maxLength: 6 }}
+                      placeholder="Enter 6-digit pincode"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -372,6 +386,14 @@ const Profile = () => {
                     </Typography>
                     <Typography variant="body1">
                       {userInfo?.phone || 'Not provided'}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Pincode
+                    </Typography>
+                    <Typography variant="body1">
+                      {userInfo?.pincode || 'Not provided'}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} sm={6}>

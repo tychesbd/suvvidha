@@ -456,6 +456,17 @@ const Users = () => {
                       </Grid>
                     )}
                     
+                    {selectedUser.pincode && (
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Pincode
+                        </Typography>
+                        <Typography variant="body1">
+                          {selectedUser.pincode}
+                        </Typography>
+                      </Grid>
+                    )}
+                    
                     {selectedUser.serviceExpertise && selectedUser.serviceExpertise.length > 0 && (
                       <Grid item xs={12} sm={6}>
                         <Typography variant="subtitle2" color="text.secondary">
