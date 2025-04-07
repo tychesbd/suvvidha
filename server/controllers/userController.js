@@ -327,12 +327,42 @@ const toggleUserStatus = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Get vendors by pincode
+// @route   GET /api/users/vendors
+// @access  Private/Admin
+const getVendors = asyncHandler(async (req, res) => {
+  const { pincode } = req.query;
+  
+  let query = { role: 'vendor', isActive: true };
+  
+  // If pincode is provided, filter by pincode
+  if (pincode) {
+    query.address = { $regex: pincode, $options: 'i' };
+  }
+  
+  const vendors = await User.find(query).select('-password');
+  
+  // Format the response to match the expected structure in the frontend
+  const formattedVendors = vendors.map(vendor => ({
+    _id: vendor._id,
+    name: vendor.name,
+    rating: vendor.yearsOfExperience ? (3 + vendor.yearsOfExperience / 10).toFixed(1) : 4.0, // Mock rating based on experience
+    reviews: Math.floor(Math.random() * 30) + 5, // Mock reviews count
+    pincode: vendor.address ? vendor.address.match(/\d{6}/) ? vendor.address.match(/\d{6}/)[0] : '400001' : '400001',
+    distance: `${(Math.random() * 5 + 1).toFixed(1)} km`, // Mock distance
+    phone: vendor.phone || '9876543210'
+  }));
+  
+  res.json(formattedVendors);
+});
+
 module.exports = {
   registerUser,
   loginUser,
   getUserProfile,
   updateUserProfile,
   getUsers,
+  getVendors,
   toggleUserStatus,
   createDefaultUsers,
 };

@@ -1,4 +1,5 @@
 const asyncHandler = require('express-async-handler');
+const mongoose = require('mongoose');
 const Booking = require('../models/bookingModel');
 const Service = require('../models/serviceModel');
 const User = require('../models/userModel');
@@ -47,9 +48,67 @@ const createBooking = asyncHandler(async (req, res) => {
 // @access  Private/Admin
 const getAdminBookings = asyncHandler(async (req, res) => {
   console.log('Admin bookings request received from:', req.user.name, 'with role:', req.user.role);
-  const bookings = await Booking.find({}).sort({ createdAt: -1 });
-  console.log('Found bookings:', bookings.length);
-  res.json(bookings);
+  
+  try {
+    // Check if the URL path ends with /admin to prevent ID parameter confusion
+    if (req.originalUrl.endsWith('/admin') || req.originalUrl.includes('/admin?')) {
+      // First try to get bookings using the schema structure
+      let bookings = await Booking.find({}).sort({ createdAt: -1 })
+        .populate('service', 'title name')
+        .populate('user', 'name email');
+      
+      // If no bookings found with the schema structure, try to get all documents from the bookings collection
+      if (bookings.length === 0) {
+        console.log('No bookings found with schema structure, trying direct collection access');
+        
+        // Get all documents from the bookings collection regardless of structure
+        const db = mongoose.connection.db;
+        const bookingsCollection = db.collection('bookings');
+        const rawBookings = await bookingsCollection.find({}).toArray();
+        
+        console.log('Found raw bookings:', rawBookings.length);
+        
+        // Transform the raw bookings to match the expected structure in the frontend
+        bookings = rawBookings.map(booking => {
+          return {
+            _id: booking._id,
+            customer: {
+              name: booking.customerName || 'N/A',
+              phoneNumber: booking.customerPhone || 'N/A',
+              pincode: booking.location ? booking.location.split(',')[1]?.trim() : 'N/A',
+              location: booking.location || 'N/A',
+            },
+            serviceName: booking.serviceId ? `Service ID: ${booking.serviceId}` : 'N/A',
+            status: booking.status || 'pending',
+            dateTime: booking.scheduledDate || booking.date || new Date(),
+            // Add other fields as needed
+          };
+        });
+      }
+      
+      console.log('Found bookings:', bookings.length);
+      
+      // Log each booking for debugging
+      if (bookings.length > 0) {
+        console.log('First booking details:', {
+          id: bookings[0]._id,
+          customer: bookings[0].customer,
+          serviceName: bookings[0].serviceName,
+          status: bookings[0].status
+        });
+      } else {
+        console.log('No bookings found in database');
+      }
+      
+      res.json(bookings);
+    } else {
+      // If the URL doesn't end with /admin, it might be trying to use 'admin' as an ID
+      res.status(400).json({ message: 'Invalid admin bookings request' });
+    }
+  } catch (error) {
+    console.error('Error fetching admin bookings:', error);
+    res.status(500).json({ message: 'Error fetching bookings' });
+  }
 });
 
 // @desc    Get user bookings

@@ -6,6 +6,7 @@ const {
   getUserProfile,
   updateUserProfile,
   getUsers,
+  getVendors,
   toggleUserStatus,
   createDefaultUsers,
 } = require('../controllers/userController');
@@ -23,6 +24,7 @@ router.put('/profile', protect, upload.single('idProofDocument'), updateUserProf
 
 // Admin routes
 router.get('/', protect, admin, getUsers);
+router.get('/vendors', protect, admin, getVendors);
 router.put('/:id/toggle-status', protect, admin, toggleUserStatus);
 
 module.exports = router;

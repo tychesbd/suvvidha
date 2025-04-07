@@ -99,7 +99,9 @@ const Bookings = () => {
         console.log('Making API request with token:', userInfo.token.substring(0, 10) + '...');
         console.log('User role:', userInfo.role);
         
-        const response = await axios.get('/api/bookings/admin', config);
+        // Add timestamp to prevent caching issues
+        const timestamp = new Date().getTime();
+        const response = await axios.get(`/api/bookings/admin?t=${timestamp}`, config);
         
         // Process the response data
         console.log('Admin bookings API response:', response.data);
@@ -116,6 +118,16 @@ const Bookings = () => {
         // Ensure we're working with an array
         const bookingsData = Array.isArray(response.data) ? response.data : [];
         console.log('Processed bookings:', bookingsData.length, 'bookings loaded');
+        
+        // Log each booking for debugging
+        bookingsData.forEach((booking, index) => {
+          console.log(`Booking ${index + 1}:`, {
+            id: booking._id,
+            customer: booking.customer ? booking.customer.name : 'N/A',
+            service: booking.serviceName,
+            status: booking.status
+          });
+        });
         
         if (bookingsData.length === 0) {
           console.log('No bookings found in the response data');

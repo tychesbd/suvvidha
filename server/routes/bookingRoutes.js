@@ -11,6 +11,10 @@ const {
 } = require('../controllers/bookingController');
 const { protect, admin } = require('../middleware/authMiddleware');
 
+// Admin routes - placing these first to ensure they match before the ID routes
+router.route('/admin')
+  .get(protect, admin, getAdminBookings);
+
 // User routes
 router.route('/')
   .post(protect, createBooking)
@@ -21,10 +25,6 @@ router.route('/:id')
 
 router.route('/:id/cancel')
   .put(protect, cancelBooking);
-
-// Admin routes
-router.route('/admin')
-  .get(protect, admin, getAdminBookings);
 
 router.route('/:id/status')
   .put(protect, admin, updateBookingStatus);

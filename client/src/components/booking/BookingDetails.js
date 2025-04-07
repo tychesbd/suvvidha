@@ -148,57 +148,19 @@ const BookingDetails = ({ bookingId }) => {
         },
       };
       
-      // In a real application, you would fetch vendors from an API
-      // For now, we'll simulate it with a timeout
       setLoading(true);
       
-      // This would be replaced with an actual API call
-      // const response = await axios.get('/api/vendors', config);
-      // setVendors(response.data);
+      // Get customer pincode from booking for filtering vendors
+      const pincode = booking.customer.pincode;
       
-      // Simulating API call for now
-      setTimeout(() => {
-        const mockVendors = [
-          {
-            _id: 'V-001',
-            name: 'Rahul Sharma',
-            rating: 4.8,
-            reviews: 24,
-            pincode: '400001',
-            distance: '2.5 km',
-            phone: '9876543210'
-          },
-          {
-            _id: 'V-002',
-            name: 'Priya Patel',
-            rating: 4.5,
-            reviews: 18,
-            pincode: '400002',
-            distance: '3.2 km',
-            phone: '9876543211'
-          },
-          {
-            _id: 'V-003',
-            name: 'Amit Kumar',
-            rating: 4.9,
-            reviews: 32,
-            pincode: '400001',
-            distance: '1.8 km',
-            phone: '9876543212'
-          },
-          {
-            _id: 'V-004',
-            name: 'Sneha Gupta',
-            rating: 4.2,
-            reviews: 15,
-            pincode: '400003',
-            distance: '4.5 km',
-            phone: '9876543213'
-          }
-        ];
-        setVendors(mockVendors);
-        setLoading(false);
-      }, 1000);
+      // Fetch vendors from the API with pincode filter if available
+      const response = await axios.get(
+        `/api/users/vendors${pincode ? `?pincode=${pincode}` : ''}`,
+        config
+      );
+      
+      setVendors(response.data);
+      setLoading(false);
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to fetch vendors');
       setLoading(false);
