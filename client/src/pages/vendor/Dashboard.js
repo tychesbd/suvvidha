@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
@@ -20,6 +20,7 @@ import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices
 // Components
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import SimpleLayout from '../../components/layout/SimpleLayout';
+import SubscriptionCard from '../../components/subscription/SubscriptionCard';
 
 // Dashboard sub-pages
 import Profile from './Profile';
@@ -94,7 +95,95 @@ const VendorHome = () => {
         </Typography>
       </Paper>
 
-
+      <Typography variant="h5" sx={{ mt: 6, mb: 3 }}>
+        Subscription Status
+      </Typography>
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          {/* Mock subscription data - in a real app, this would come from an API */}
+          <SubscriptionCard 
+            subscription={{
+              plan: 'premium',
+              price: 4999,
+              startDate: new Date('2023-10-01'),
+              endDate: new Date('2024-04-01'),
+              status: 'active',
+              paymentStatus: 'paid',
+              features: [
+                'Premium service listing', 
+                'Dedicated customer support', 
+                'Advanced analytics', 
+                'Marketing tools', 
+                '180 days validity'
+              ]
+            }}
+            onBuyClick={() => console.log('Buy subscription clicked')}
+          />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
+            <Typography variant="h6" gutterBottom>Service Metrics</Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    p: 2, 
+                    bgcolor: 'background.default',
+                    textAlign: 'center',
+                    borderRadius: 2
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary">Total Services</Typography>
+                  <Typography variant="h4" color="secondary.main">12</Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={6}>
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    p: 2, 
+                    bgcolor: 'background.default',
+                    textAlign: 'center',
+                    borderRadius: 2
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary">Active Services</Typography>
+                  <Typography variant="h4" color="secondary.main">8</Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={6}>
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    p: 2, 
+                    bgcolor: 'background.default',
+                    textAlign: 'center',
+                    borderRadius: 2
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary">Avg. Rating</Typography>
+                  <Typography variant="h4" color="secondary.main">4.7</Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={6}>
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    p: 2, 
+                    bgcolor: 'background.default',
+                    textAlign: 'center',
+                    borderRadius: 2
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary">Reviews</Typography>
+                  <Typography variant="h4" color="secondary.main">32</Typography>
+                </Paper>
+              </Grid>
+            </Grid>
+          </Paper>
+        </Grid>
+      </Grid>
     </Box>
   );
 };

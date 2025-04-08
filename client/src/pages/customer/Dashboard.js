@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 // Material UI imports
-import { Typography, Grid, Paper, Box } from '@mui/material';
+import { Typography, Grid, Paper, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Button } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 // Icons
@@ -15,6 +15,13 @@ import PersonIcon from '@mui/icons-material/Person';
 import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import PaymentIcon from '@mui/icons-material/Payment';
+import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
+import PlumbingIcon from '@mui/icons-material/Plumbing';
+import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
+import FormatPaintIcon from '@mui/icons-material/FormatPaint';
 
 // Components
 import DashboardLayout from '../../components/layout/DashboardLayout';
@@ -75,16 +82,16 @@ const CustomerHome = () => {
 
       <Grid container spacing={4} sx={{ mt: 2 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Booking" value="5" icon={<ShoppingCartIcon fontSize="large" />} />
+          <StatsCard title="Active Bookings" value="3" icon={<ShoppingCartIcon fontSize="large" />} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Wishlist" value="12" icon={<FavoriteIcon fontSize="large" />} />
+          <StatsCard title="Completed" value="8" icon={<CheckCircleIcon fontSize="large" />} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Booking History" value="12" icon={<HistoryIcon fontSize="large" />} />
+          <StatsCard title="Cancelled" value="2" icon={<CancelIcon fontSize="large" />} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Profile" value="1" icon={<PersonIcon fontSize="large" />} />
+          <StatsCard title="Total Spent" value="₹4,250" icon={<PaymentIcon fontSize="large" />} />
         </Grid>
       </Grid>
 
@@ -92,17 +99,82 @@ const CustomerHome = () => {
         Recent Bookings
       </Typography>
       <Paper elevation={2} sx={{ p: 3 }}>
-        <Typography variant="body1" color="text.secondary" align="center">
-          You don't have any recent bookings.
-        </Typography>
+        {/* Mock booking data - in a real app, this would come from an API */}
+        {[1, 2, 3].length > 0 ? (
+          <TableContainer component={Paper} elevation={0}>
+            <Table sx={{ minWidth: 650 }} size="medium">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Booking ID</TableCell>
+                  <TableCell>Service</TableCell>
+                  <TableCell>Date</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Amount</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {[
+                  {
+                    id: 'BK001',
+                    service: 'Home Cleaning',
+                    date: '2023-12-15',
+                    status: 'completed',
+                    amount: 1200
+                  },
+                  {
+                    id: 'BK002',
+                    service: 'Plumbing Service',
+                    date: '2023-12-20',
+                    status: 'active',
+                    amount: 850
+                  },
+                  {
+                    id: 'BK003',
+                    service: 'Electrical Repair',
+                    date: '2023-12-25',
+                    status: 'pending',
+                    amount: 1500
+                  }
+                ].map((booking) => (
+                  <TableRow key={booking.id}>
+                    <TableCell>{booking.id}</TableCell>
+                    <TableCell>{booking.service}</TableCell>
+                    <TableCell>{new Date(booking.date).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <Chip 
+                        label={booking.status} 
+                        color={
+                          booking.status === 'completed' ? 'success' : 
+                          booking.status === 'active' ? 'primary' : 
+                          booking.status === 'cancelled' ? 'error' : 'warning'
+                        }
+                        size="small"
+                        sx={{ textTransform: 'capitalize' }}
+                      />
+                    </TableCell>
+                    <TableCell>₹{booking.amount}</TableCell>
+                    <TableCell>
+                      <Button size="small" variant="outlined">View</Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Typography variant="body1" color="text.secondary" align="center">
+            You don't have any recent bookings.
+          </Typography>
+        )}
       </Paper>
 
       <Typography variant="h5" sx={{ mt: 6, mb: 3 }}>
-        Recommended for You
+        Recommended Services
       </Typography>
       <Grid container spacing={3}>
-        {[1, 2, 3, 4].map((item) => (
-          <Grid item xs={12} sm={6} md={3} key={item}>
+        {['Home Cleaning', 'Plumbing', 'Electrical Repair', 'Painting'].map((service, index) => (
+          <Grid item xs={12} sm={6} md={3} key={index}>
             <Paper
               elevation={2}
               sx={{
@@ -113,27 +185,35 @@ const CustomerHome = () => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 bgcolor: 'background.default',
+                transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-5px)',
+                  boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+                  cursor: 'pointer'
+                },
               }}
             >
               <Box
                 sx={{
-                  width: 100,
-                  height: 100,
-                  bgcolor: 'grey.200',
+                  width: 80,
+                  height: 80,
+                  bgcolor: 'primary.light',
                   mb: 2,
                   borderRadius: '50%',
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
+                  color: 'white'
                 }}
               >
-                <Typography variant="body2" color="text.secondary">
-                  Product {item}
-                </Typography>
+                {index === 0 && <CleaningServicesIcon />}
+                {index === 1 && <PlumbingIcon />}
+                {index === 2 && <ElectricalServicesIcon />}
+                {index === 3 && <FormatPaintIcon />}
               </Box>
-              <Typography variant="subtitle1">Product Name {item}</Typography>
+              <Typography variant="subtitle1">{service}</Typography>
               <Typography variant="body2" color="text.secondary">
-                $99.99
+                Starting from ₹{(index + 5) * 100}
               </Typography>
             </Paper>
           </Grid>

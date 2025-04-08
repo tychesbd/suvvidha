@@ -193,9 +193,9 @@ const AdminDashboard = () => {
       path: '/admin/bookings',
     },
     {
-      text: 'Vendors',
+      text: 'Subscriptions',
       icon: <StorefrontIcon />,
-      path: '/admin/settings',
+      path: '/admin/subscriptions',
     },
     {
       text: 'Profile',
@@ -242,9 +242,11 @@ const AdminDashboard = () => {
           <Bookings />
         </DashboardLayout>
       } />
-      <Route path="/settings" element={
+      <Route path="/subscriptions" element={
         <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
-          <Typography variant="h4">System Settings</Typography>
+          <React.Suspense fallback={<Typography>Loading...</Typography>}>
+            {React.createElement(React.lazy(() => import('./Subscriptions')))}
+          </React.Suspense>
         </DashboardLayout>
       } />
       
