@@ -5,6 +5,7 @@ import categoryReducer from './features/categories/categorySlice';
 import contentReducer from './features/content/contentSlice';
 import notificationReducer from './features/notifications/notificationSlice';
 import bookingReducer from './features/bookings/bookingSlice';
+import dashboardReducer from './features/dashboard/dashboardSlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     content: contentReducer,
     notifications: notificationReducer,
     bookings: bookingReducer,
+    dashboard: dashboardReducer,
   },
 });
 
