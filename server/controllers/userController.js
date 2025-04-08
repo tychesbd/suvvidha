@@ -352,7 +352,8 @@ const getVendors = asyncHandler(async (req, res) => {
     reviews: Math.floor(Math.random() * 30) + 5, // Mock reviews count
     pincode: vendor.pincode || '400001',
     distance: `${(Math.random() * 5 + 1).toFixed(1)} km`, // Mock distance
-    phone: vendor.phone || '9876543210'
+    phone: vendor.phone || '9876543210',
+    isActive: vendor.isActive // Include isActive status
   }));
   
   res.json(formattedVendors);

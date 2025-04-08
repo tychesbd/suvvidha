@@ -97,6 +97,7 @@ const BookingDetails = ({ bookingId }) => {
     pincode: '',
     minRating: 0
   });
+  const [statusFilter, setStatusFilter] = useState('all');
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   
   // Fetch booking details
@@ -159,9 +160,12 @@ const BookingDetails = ({ bookingId }) => {
         config
       );
       
-      setVendors(response.data);
+      // Use all vendors from the API response instead of filtering
+      console.log('Vendors API response:', response.data);
+      setVendors(response.data || []);
       setLoading(false);
     } catch (error) {
+      console.error('Error fetching vendors:', error);
       setError(error.response?.data?.message || 'Failed to fetch vendors');
       setLoading(false);
     }
@@ -298,11 +302,33 @@ const BookingDetails = ({ bookingId }) => {
 
   // Filter vendors based on search query and filters
   const filteredVendors = vendors.filter(vendor => {
-    const matchesSearch = vendor.name.toLowerCase().includes(vendorSearchQuery.toLowerCase());
+    // Skip invalid vendor objects
+    if (!vendor || typeof vendor !== 'object') {
+      console.warn('Invalid vendor object found:', vendor);
+      return false;
+    }
+    
+    const matchesSearch = vendor.name?.toLowerCase().includes(vendorSearchQuery.toLowerCase()) || false;
     const matchesPincode = !vendorFilters.pincode || vendor.pincode === vendorFilters.pincode;
     const matchesRating = vendor.rating >= vendorFilters.minRating;
+    const matchesStatus = statusFilter === 'all' || 
+      (statusFilter === 'active' && vendor.isActive) || 
+      (statusFilter === 'blocked' && !vendor.isActive);
     
-    return matchesSearch && matchesPincode && matchesRating;
+    return matchesSearch && matchesPincode && matchesRating && matchesStatus;
+  });
+  
+  // Log filtered vendors for debugging
+  console.log('Filtered vendors:', filteredVendors.length, 'out of', vendors.length);
+  
+  // Sort vendors: active first, then by rating
+  const sortedVendors = [...filteredVendors].sort((a, b) => {
+    // First sort by active status
+    if (a.isActive !== b.isActive) {
+      return a.isActive ? -1 : 1; // Active vendors first
+    }
+    // Then sort by rating
+    return b.rating - a.rating;
   });
 
   // Render loading state
@@ -415,7 +441,7 @@ const BookingDetails = ({ bookingId }) => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
-                    {booking.vendor.name.charAt(0)}
+                    {booking.vendor && booking.vendor.name ? booking.vendor.name.charAt(0) : 'V'}
                   </Avatar>
                   <Box>
                     <Typography variant="subtitle1">{booking.vendor.name}</Typography>
@@ -534,43 +560,66 @@ const BookingDetails = ({ bookingId }) => {
             </Typography>
           </Box>
           
-          <Box sx={{ display: 'flex', mb: 2 }}>
-            <TextField
-              placeholder="Search vendors by name"
-              value={vendorSearchQuery}
-              onChange={handleVendorSearch}
-              fullWidth
-              variant="outlined"
-              size="small"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <Button 
-              variant="outlined" 
-              startIcon={<FilterListIcon />}
-              onClick={handleFilterDialogOpen}
-              sx={{ ml: 1 }}
-            >
-              Filter
-            </Button>
+          <Grid container spacing={2} sx={{ mb: 2 }}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                placeholder="Search vendors by name"
+                value={vendorSearchQuery}
+                onChange={handleVendorSearch}
+                fullWidth
+                variant="outlined"
+                size="small"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth size="small" variant="outlined">
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  label="Status"
+                >
+                  <MenuItem value="all">All Status</MenuItem>
+                  <MenuItem value="active">Active</MenuItem>
+                  <MenuItem value="blocked">Blocked</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={2}>
+              <Button 
+                variant="outlined" 
+                startIcon={<FilterListIcon />}
+                onClick={handleFilterDialogOpen}
+                fullWidth
+              >
+                More Filters
+              </Button>
+            </Grid>
+          </Grid>
+          
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+            <Typography variant="subtitle2">
+              Available Vendors ({filteredVendors.length})
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {filteredVendors.filter(v => v && v.isActive).length} active, {filteredVendors.filter(v => v && !v.isActive).length} blocked
+            </Typography>
           </Box>
           
-          <Typography variant="subtitle2" gutterBottom>
-            Available Vendors ({filteredVendors.length})
-          </Typography>
-          
-          {filteredVendors.length === 0 ? (
+          {sortedVendors.length === 0 ? (
             <Typography variant="body2" color="text.secondary" align="center" sx={{ my: 3 }}>
               No vendors found matching your criteria.
             </Typography>
           ) : (
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              {filteredVendors.map((vendor) => (
+              {sortedVendors.map((vendor) => (
                 <Grid item xs={12} sm={6} key={vendor._id}>
                   <Card 
                     variant="outlined" 
@@ -585,7 +634,7 @@ const BookingDetails = ({ bookingId }) => {
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
-                            {vendor.name.charAt(0)}
+                            {vendor && vendor.name ? vendor.name.charAt(0) : 'V'}
                           </Avatar>
                           <Box>
                             <Typography variant="subtitle1">{vendor.name}</Typography>
@@ -602,13 +651,21 @@ const BookingDetails = ({ bookingId }) => {
                         )}
                       </Box>
                       
-                      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+                      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Typography variant="body2" color="text.secondary">
                           Pincode: {vendor.pincode}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Distance: {vendor.distance}
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Chip 
+                            label={vendor.isActive ? 'Active' : 'Blocked'}
+                            color={vendor.isActive ? 'success' : 'error'}
+                            size="small"
+                            sx={{ mr: 1 }}
+                          />
+                          <Typography variant="body2" color="text.secondary">
+                            Distance: {vendor.distance}
+                          </Typography>
+                        </Box>
                       </Box>
                     </CardContent>
                   </Card>
@@ -677,6 +734,7 @@ const BookingDetails = ({ bookingId }) => {
                 pincode: '',
                 minRating: 0
               });
+              setStatusFilter('all');
             }} 
             color="inherit"
           >

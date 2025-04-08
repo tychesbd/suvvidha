@@ -140,7 +140,10 @@ const VendorDashboard = () => {
 
       <Route path="/booking" element={
         <DashboardLayout title="Vendor Dashboard" menuItems={menuItems}>
-          <Typography variant="h4">Booking Page</Typography>
+          <React.Suspense fallback={<Typography>Loading...</Typography>}>
+            {/* Lazy load the Bookings component */}
+            {React.createElement(React.lazy(() => import('./Bookings')))} 
+          </React.Suspense>
         </DashboardLayout>
       } />
       <Route path="/analytics" element={
