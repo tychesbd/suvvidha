@@ -6,6 +6,7 @@ import contentReducer from './features/content/contentSlice';
 import notificationReducer from './features/notifications/notificationSlice';
 import bookingReducer from './features/bookings/bookingSlice';
 import dashboardReducer from './features/dashboard/dashboardSlice';
+import subscriptionReducer from './features/subscriptions/subscriptionSlice';
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     notifications: notificationReducer,
     bookings: bookingReducer,
     dashboard: dashboardReducer,
+    subscriptions: subscriptionReducer,
   },
 });
 

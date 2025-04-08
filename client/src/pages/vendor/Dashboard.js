@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { getVendorSubscription } from '../../features/subscriptions/subscriptionSlice';
 
 // Material UI imports
-import { Typography, Grid, Paper, Box } from '@mui/material';
+import { Typography, Grid, Paper, Box, CircularProgress } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 // Icons
@@ -64,6 +65,13 @@ const StatsCard = ({ title, value, icon }) => {
 
 const VendorHome = () => {
   const { userInfo } = useSelector((state) => state.auth);
+  const { vendorSubscription, loading } = useSelector((state) => state.subscriptions);
+  const dispatch = useDispatch();
+
+  // Fetch vendor subscription when component mounts
+  useEffect(() => {
+    dispatch(getVendorSubscription());
+  }, [dispatch]);
 
   return (
     <Box>
@@ -79,25 +87,16 @@ const VendorHome = () => {
       </Typography>
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
-          {/* Mock subscription data - in a real app, this would come from an API */}
-          <SubscriptionCard 
-            subscription={{
-              plan: 'premium',
-              price: 4999,
-              startDate: new Date('2023-10-01'),
-              endDate: new Date('2024-04-01'),
-              status: 'active',
-              paymentStatus: 'paid',
-              features: [
-                'Premium service listing', 
-                'Dedicated customer support', 
-                'Advanced analytics', 
-                'Marketing tools', 
-                '180 days validity'
-              ]
-            }}
-            onBuyClick={() => console.log('Buy subscription clicked')}
-          />
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <SubscriptionCard 
+              subscription={vendorSubscription}
+              onBuyClick={() => console.log('Buy subscription clicked')}
+            />
+          )}
         </Grid>
         <Grid item xs={12} md={6}>
           <Paper elevation={2} sx={{ p: 3, height: '100%' }}>

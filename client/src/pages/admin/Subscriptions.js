@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Typography,
   Paper,
@@ -23,12 +24,20 @@ import {
   FormControl,
   InputLabel,
   Select,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import SettingsIcon from '@mui/icons-material/Settings';
+import ListAltIcon from '@mui/icons-material/ListAlt';
+
+// Import the PlanManagement component
+import PlanManagement from '../../components/subscription/PlanManagement';
+import { getAllSubscriptions } from '../../features/subscriptions/subscriptionSlice';
 
 // Mock data - in a real app, this would come from an API
 const mockSubscriptions = [
@@ -104,6 +113,10 @@ const StatusChip = styled(Chip)(({ theme, status }) => {
 });
 
 const Subscriptions = () => {
+  const dispatch = useDispatch();
+  const { subscriptions: apiSubscriptions, loading } = useSelector((state) => state.subscriptions);
+  
+  const [activeTab, setActiveTab] = useState(0);
   const [subscriptions, setSubscriptions] = useState(mockSubscriptions);
   const [filteredSubscriptions, setFilteredSubscriptions] = useState(mockSubscriptions);
   const [filters, setFilters] = useState({
@@ -119,15 +132,21 @@ const Subscriptions = () => {
 
   // In a real app, you would fetch subscriptions from an API
   useEffect(() => {
-    // Simulating API call
-    // const fetchSubscriptions = async () => {
-    //   const response = await fetch('/api/subscriptions');
-    //   const data = await response.json();
-    //   setSubscriptions(data);
-    //   setFilteredSubscriptions(data);
-    // };
-    // fetchSubscriptions();
-  }, []);
+    // Uncomment to fetch from API
+    // dispatch(getAllSubscriptions());
+  }, [dispatch]);
+  
+  // Use API data if available
+  useEffect(() => {
+    if (apiSubscriptions && apiSubscriptions.length > 0) {
+      setSubscriptions(apiSubscriptions);
+      setFilteredSubscriptions(apiSubscriptions);
+    }
+  }, [apiSubscriptions]);
+  
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
 
   // Apply filters
   useEffect(() => {
@@ -214,10 +233,39 @@ const Subscriptions = () => {
         Subscription Management
       </Typography>
       <Typography variant="subtitle1" color="text.secondary" paragraph>
-        Manage vendor subscriptions and payment verifications
+        Manage vendor subscriptions, payment verifications, and subscription plans
       </Typography>
 
-      <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        <Tabs 
+          value={activeTab} 
+          onChange={handleTabChange} 
+          aria-label="subscription management tabs"
+        >
+          <Tab 
+            icon={<ListAltIcon />} 
+            label="Vendor Subscriptions" 
+            id="subscriptions-tab" 
+            aria-controls="subscriptions-panel" 
+          />
+          <Tab 
+            icon={<SettingsIcon />} 
+            label="Plan Management" 
+            id="plans-tab" 
+            aria-controls="plans-panel" 
+          />
+        </Tabs>
+      </Box>
+
+      {/* Vendor Subscriptions Tab */}
+      <div
+        role="tabpanel"
+        hidden={activeTab !== 0}
+        id="subscriptions-panel"
+        aria-labelledby="subscriptions-tab"
+      >
+        {activeTab === 0 && (
+          <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <TextField
             label="Search by vendor name or email"
@@ -372,6 +420,22 @@ const Subscriptions = () => {
           </Table>
         </TableContainer>
       </Paper>
+        )}
+      </div>
+
+      {/* Plan Management Tab */}
+      <div
+        role="tabpanel"
+        hidden={activeTab !== 1}
+        id="plans-panel"
+        aria-labelledby="plans-tab"
+      >
+        {activeTab === 1 && (
+          <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
+            <PlanManagement />
+          </Paper>
+        )}
+      </div>
 
       {/* Subscription Details Dialog */}
       <Dialog open={detailsOpen} onClose={() => setDetailsOpen(false)} maxWidth="sm" fullWidth>

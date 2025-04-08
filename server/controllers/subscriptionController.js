@@ -175,6 +175,35 @@ const getSubscriptionPlans = asyncHandler(async (req, res) => {
   res.json(plans);
 });
 
+// @desc    Update subscription plan
+// @route   PUT /api/subscriptions/plans/:id
+// @access  Private/Admin
+const updateSubscriptionPlan = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { name, price, duration, durationDays, features, description, offers } = req.body;
+
+  // Validate plan ID
+  if (!['basic', 'standard', 'premium'].includes(id)) {
+    res.status(400);
+    throw new Error('Invalid plan ID');
+  }
+
+  // In a production app, you would update the plan in the database
+  // For now, we'll just return the updated plan
+  const updatedPlan = {
+    id,
+    name,
+    price,
+    duration,
+    durationDays,
+    features,
+    description,
+    offers,
+  };
+
+  res.json(updatedPlan);
+});
+
 module.exports = {
   getSubscriptions,
   getVendorSubscription,
@@ -182,4 +211,5 @@ module.exports = {
   updatePaymentProof,
   verifySubscription,
   getSubscriptionPlans,
+  updateSubscriptionPlan,
 };
