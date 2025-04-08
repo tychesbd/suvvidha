@@ -74,27 +74,6 @@ const VendorHome = () => {
         Manage your bookings and analytics
       </Typography>
 
-      <Grid container spacing={4} sx={{ mt: 2 }}>
-        <Grid item xs={12} sm={6} md={4}>
-          <StatsCard title="Booking" value="8" icon={<ShoppingCartIcon fontSize="large" />} />
-        </Grid>
-        <Grid item xs={12} sm={6} md={4}>
-          <StatsCard title="Revenue" value="₹12,450" icon={<AnalyticsIcon fontSize="large" />} />
-        </Grid>
-        <Grid item xs={12} sm={6} md={4}>
-          <StatsCard title="Store" value="1" icon={<StorefrontIcon fontSize="large" />} />
-        </Grid>
-      </Grid>
-
-      <Typography variant="h5" sx={{ mt: 6, mb: 3 }}>
-        Recent Bookings
-      </Typography>
-      <Paper elevation={2} sx={{ p: 3 }}>
-        <Typography variant="body1" color="text.secondary" align="center">
-          You don't have any recent bookings.
-        </Typography>
-      </Paper>
-
       <Typography variant="h5" sx={{ mt: 6, mb: 3 }}>
         Subscription Status
       </Typography>
