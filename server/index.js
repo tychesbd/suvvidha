@@ -34,6 +34,8 @@ app.use('/api/services', require('./routes/serviceRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
 app.use('/api/content', require('./routes/contentRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
+app.use('/api/bookings', require('./routes/bookingRoutes'));
+app.use('/api/subscriptions', require('./routes/subscriptionRoutes'));
 
 // Default route
 app.get('/', (req, res) => {
@@ -43,7 +45,7 @@ app.get('/', (req, res) => {
 // Error handler middleware
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5003;
 
 // Function to find an available port
 const findAvailablePort = (startPort) => {

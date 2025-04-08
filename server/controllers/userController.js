@@ -138,6 +138,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     user.email = req.body.email || user.email;
     user.phone = req.body.phone || user.phone;
     user.address = req.body.address || user.address;
+    user.pincode = req.body.pincode || user.pincode;
     user.profileImage = req.body.profileImage || user.profileImage;
     
     // Update vendor-specific fields if user is a vendor
@@ -191,6 +192,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       role: updatedUser.role,
       phone: updatedUser.phone,
       address: updatedUser.address,
+      pincode: updatedUser.pincode,
       profileImage: updatedUser.profileImage,
       isActive: updatedUser.isActive,
       token: generateToken(updatedUser._id),
@@ -327,12 +329,43 @@ const toggleUserStatus = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Get vendors by pincode
+// @route   GET /api/users/vendors
+// @access  Private/Admin
+const getVendors = asyncHandler(async (req, res) => {
+  const { pincode } = req.query;
+  
+  let query = { role: 'vendor', isActive: true };
+  
+  // If pincode is provided, filter by pincode
+  if (pincode) {
+    query.pincode = pincode;
+  }
+  
+  const vendors = await User.find(query).select('-password');
+  
+  // Format the response to match the expected structure in the frontend
+  const formattedVendors = vendors.map(vendor => ({
+    _id: vendor._id,
+    name: vendor.name,
+    rating: vendor.yearsOfExperience ? (3 + vendor.yearsOfExperience / 10).toFixed(1) : 4.0, // Mock rating based on experience
+    reviews: Math.floor(Math.random() * 30) + 5, // Mock reviews count
+    pincode: vendor.pincode || '400001',
+    distance: `${(Math.random() * 5 + 1).toFixed(1)} km`, // Mock distance
+    phone: vendor.phone || '9876543210',
+    isActive: vendor.isActive // Include isActive status
+  }));
+  
+  res.json(formattedVendors);
+});
+
 module.exports = {
   registerUser,
   loginUser,
   getUserProfile,
   updateUserProfile,
   getUsers,
+  getVendors,
   toggleUserStatus,
   createDefaultUsers,
 };

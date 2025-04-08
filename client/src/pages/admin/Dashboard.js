@@ -29,6 +29,7 @@ import Users from './Users';
 import AdminServices from './Services';
 import AdminCategories from './Categories';
 import ContentManagement from './ContentManagement';
+import Bookings from './Bookings';
 
 // Common pages
 import Home from '../common/Home';
@@ -189,12 +190,12 @@ const AdminDashboard = () => {
     {
       text: 'Bookings',
       icon: <CalendarTodayIcon />,
-      path: '/admin/orders',
+      path: '/admin/bookings',
     },
     {
-      text: 'Vendors',
+      text: 'Subscriptions',
       icon: <StorefrontIcon />,
-      path: '/admin/settings',
+      path: '/admin/subscriptions',
     },
     {
       text: 'Profile',
@@ -236,14 +237,16 @@ const AdminDashboard = () => {
           <ContentManagement />
         </DashboardLayout>
       } />
-      <Route path="/orders" element={
+      <Route path="/bookings" element={
         <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
-          <Typography variant="h4">Orders Management</Typography>
+          <Bookings />
         </DashboardLayout>
       } />
-      <Route path="/settings" element={
+      <Route path="/subscriptions" element={
         <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
-          <Typography variant="h4">System Settings</Typography>
+          <React.Suspense fallback={<Typography>Loading...</Typography>}>
+            {React.createElement(React.lazy(() => import('./Subscriptions')))}
+          </React.Suspense>
         </DashboardLayout>
       } />
       

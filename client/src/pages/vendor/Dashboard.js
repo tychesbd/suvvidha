@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
@@ -20,6 +20,7 @@ import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices
 // Components
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import SimpleLayout from '../../components/layout/SimpleLayout';
+import SubscriptionCard from '../../components/subscription/SubscriptionCard';
 
 // Dashboard sub-pages
 import Profile from './Profile';
@@ -70,74 +71,118 @@ const VendorHome = () => {
         Welcome, {userInfo?.name}!
       </Typography>
       <Typography variant="subtitle1" color="text.secondary" paragraph>
-        Manage your products and orders
+        Manage your bookings and analytics
       </Typography>
 
       <Grid container spacing={4} sx={{ mt: 2 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Products" value="24" icon={<InventoryIcon fontSize="large" />} />
+        <Grid item xs={12} sm={6} md={4}>
+          <StatsCard title="Booking" value="8" icon={<ShoppingCartIcon fontSize="large" />} />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Orders" value="8" icon={<ShoppingCartIcon fontSize="large" />} />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={4}>
           <StatsCard title="Revenue" value="₹12,450" icon={<AnalyticsIcon fontSize="large" />} />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={4}>
           <StatsCard title="Store" value="1" icon={<StorefrontIcon fontSize="large" />} />
         </Grid>
       </Grid>
 
       <Typography variant="h5" sx={{ mt: 6, mb: 3 }}>
-        Recent Orders
+        Recent Bookings
       </Typography>
       <Paper elevation={2} sx={{ p: 3 }}>
         <Typography variant="body1" color="text.secondary" align="center">
-          You don't have any recent orders.
+          You don't have any recent bookings.
         </Typography>
       </Paper>
 
       <Typography variant="h5" sx={{ mt: 6, mb: 3 }}>
-        Top Products
+        Subscription Status
       </Typography>
       <Grid container spacing={3}>
-        {[1, 2, 3, 4].map((item) => (
-          <Grid item xs={12} sm={6} md={3} key={item}>
-            <Paper
-              elevation={2}
-              sx={{
-                p: 2,
-                height: 200,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                bgcolor: 'background.default',
-              }}
-            >
-              <Box
-                sx={{
-                  width: 100,
-                  height: 100,
-                  bgcolor: 'grey.200',
-                  mb: 2,
-                  borderRadius: '4px',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <Typography variant="body2" color="text.secondary">
-                  Product {item}
-                </Typography>
-              </Box>
-              <Typography variant="subtitle1">Product Name {item}</Typography>
-              <Typography variant="body2" color="text.secondary">
-                ₹999.99
-              </Typography>
-            </Paper>
-          </Grid>
-        ))}
+        <Grid item xs={12} md={6}>
+          {/* Mock subscription data - in a real app, this would come from an API */}
+          <SubscriptionCard 
+            subscription={{
+              plan: 'premium',
+              price: 4999,
+              startDate: new Date('2023-10-01'),
+              endDate: new Date('2024-04-01'),
+              status: 'active',
+              paymentStatus: 'paid',
+              features: [
+                'Premium service listing', 
+                'Dedicated customer support', 
+                'Advanced analytics', 
+                'Marketing tools', 
+                '180 days validity'
+              ]
+            }}
+            onBuyClick={() => console.log('Buy subscription clicked')}
+          />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
+            <Typography variant="h6" gutterBottom>Service Metrics</Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    p: 2, 
+                    bgcolor: 'background.default',
+                    textAlign: 'center',
+                    borderRadius: 2
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary">Total Services</Typography>
+                  <Typography variant="h4" color="secondary.main">12</Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={6}>
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    p: 2, 
+                    bgcolor: 'background.default',
+                    textAlign: 'center',
+                    borderRadius: 2
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary">Active Services</Typography>
+                  <Typography variant="h4" color="secondary.main">8</Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={6}>
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    p: 2, 
+                    bgcolor: 'background.default',
+                    textAlign: 'center',
+                    borderRadius: 2
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary">Avg. Rating</Typography>
+                  <Typography variant="h4" color="secondary.main">4.7</Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={6}>
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    p: 2, 
+                    bgcolor: 'background.default',
+                    textAlign: 'center',
+                    borderRadius: 2
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary">Reviews</Typography>
+                  <Typography variant="h4" color="secondary.main">32</Typography>
+                </Paper>
+              </Grid>
+            </Grid>
+          </Paper>
+        </Grid>
       </Grid>
     </Box>
   );
@@ -152,14 +197,9 @@ const VendorDashboard = () => {
       path: '/vendor',
     },
     {
-      text: 'Products',
-      icon: <InventoryIcon />,
-      path: '/vendor/products',
-    },
-    {
-      text: 'Orders',
+      text: 'Booking',
       icon: <ShoppingCartIcon />,
-      path: '/vendor/orders',
+      path: '/vendor/booking',
     },
     {
       text: 'Analytics',
@@ -186,14 +226,13 @@ const VendorDashboard = () => {
           <Profile />
         </DashboardLayout>
       } />
-      <Route path="/products" element={
+
+      <Route path="/booking" element={
         <DashboardLayout title="Vendor Dashboard" menuItems={menuItems}>
-          <Typography variant="h4">Products Page</Typography>
-        </DashboardLayout>
-      } />
-      <Route path="/orders" element={
-        <DashboardLayout title="Vendor Dashboard" menuItems={menuItems}>
-          <Typography variant="h4">Orders Page</Typography>
+          <React.Suspense fallback={<Typography>Loading...</Typography>}>
+            {/* Lazy load the Bookings component */}
+            {React.createElement(React.lazy(() => import('./Bookings')))} 
+          </React.Suspense>
         </DashboardLayout>
       } />
       <Route path="/analytics" element={

@@ -60,4 +60,6 @@ const customer = (req, res, next) => {
   }
 };
 
+
+
 module.exports = { protect, admin, vendor, customer };
