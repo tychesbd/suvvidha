@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { getVendorSubscription } from '../../features/subscriptions/subscriptionSlice';
+import { getVendorSubscription, createSubscription } from '../../features/subscriptions/subscriptionSlice';
 
 // Material UI imports
 import { Typography, Grid, Paper, Box, CircularProgress } from '@mui/material';
@@ -22,6 +22,7 @@ import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import SimpleLayout from '../../components/layout/SimpleLayout';
 import SubscriptionCard from '../../components/subscription/SubscriptionCard';
+import SubscriptionPurchaseModal from '../../components/subscription/SubscriptionPurchaseModal';
 
 // Dashboard sub-pages
 import Profile from './Profile';
@@ -67,11 +68,40 @@ const VendorHome = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { vendorSubscription, loading } = useSelector((state) => state.subscriptions);
   const dispatch = useDispatch();
+  const [purchaseModalOpen, setPurchaseModalOpen] = useState(false);
 
   // Fetch vendor subscription when component mounts
   useEffect(() => {
     dispatch(getVendorSubscription());
   }, [dispatch]);
+  
+  const handleBuySubscription = () => {
+    setPurchaseModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setPurchaseModalOpen(false);
+  };
+
+  const handleSubmitSubscription = async (subscriptionData) => {
+    try {
+      // Dispatch action to create subscription
+      console.log('Submitting subscription:', subscriptionData);
+      await dispatch(createSubscription(subscriptionData));
+      
+      // Refresh subscription data after submission
+      dispatch(getVendorSubscription());
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Error submitting subscription:', error);
+      return Promise.reject(error);
+    }
+  };
+  
+
+
+
 
   return (
     <Box>
@@ -94,9 +124,16 @@ const VendorHome = () => {
           ) : (
             <SubscriptionCard 
               subscription={vendorSubscription}
-              onBuyClick={() => console.log('Buy subscription clicked')}
+              onBuyClick={handleBuySubscription}
             />
           )}
+          
+          {/* Subscription Purchase Modal */}
+          <SubscriptionPurchaseModal
+            open={purchaseModalOpen}
+            onClose={handleCloseModal}
+            onSubmit={handleSubmitSubscription}
+          />
         </Grid>
         <Grid item xs={12} md={6}>
           <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
@@ -180,11 +217,6 @@ const VendorDashboard = () => {
       path: '/vendor/booking',
     },
     {
-      text: 'Analytics',
-      icon: <AnalyticsIcon />,
-      path: '/vendor/analytics',
-    },
-    {
       text: 'Profile',
       icon: <PersonIcon />,
       path: '/vendor/profile',
@@ -211,11 +243,6 @@ const VendorDashboard = () => {
             {/* Lazy load the Bookings component */}
             {React.createElement(React.lazy(() => import('./Bookings')))} 
           </React.Suspense>
-        </DashboardLayout>
-      } />
-      <Route path="/analytics" element={
-        <DashboardLayout title="Vendor Dashboard" menuItems={menuItems}>
-          <Typography variant="h4">Analytics Page</Typography>
         </DashboardLayout>
       } />
       

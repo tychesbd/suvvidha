@@ -77,8 +77,13 @@ const PlanManagement = () => {
 
   // Fetch plans from API when component mounts
   useEffect(() => {
-    // In a real app, uncomment this to fetch from API
-    // dispatch(getSubscriptionPlans());
+    // Fetch plans from the API
+    dispatch(getSubscriptionPlans());
+
+    // Clean up success state when component unmounts
+    return () => {
+      dispatch(resetSubscriptionSuccess());
+    };
   }, [dispatch]);
 
   // Reset success state after showing success message
@@ -97,18 +102,13 @@ const PlanManagement = () => {
   };
 
   const handleSavePlan = (updatedPlan) => {
-    // In a real app, dispatch the update action
-    // dispatch(updateSubscriptionPlan(updatedPlan));
-    
-    // For now, update the mock data
-    const updatedPlans = mockPlans.map(plan => 
-      plan.id === updatedPlan.id ? updatedPlan : plan
-    );
-    setMockPlans(updatedPlans);
+    // Dispatch action to update the plan in the database
+    dispatch(updateSubscriptionPlan(updatedPlan));
+    setEditModalOpen(false);
   };
 
-  // Use plans from Redux store if available, otherwise use mock data
-  const displayPlans = plans.length > 0 ? plans : mockPlans;
+  // Use plans from Redux store
+  const displayPlans = plans;
 
   return (
     <Box>

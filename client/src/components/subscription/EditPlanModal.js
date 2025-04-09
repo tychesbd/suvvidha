@@ -33,6 +33,7 @@ const EditPlanModal = ({ open, onClose, plan, onSave }) => {
     if (plan) {
       setFormData({
         id: plan.id || '',
+        planId: plan.planId || plan.id || '',
         name: plan.name || '',
         price: plan.price || 0,
         duration: plan.duration || '',
@@ -40,6 +41,7 @@ const EditPlanModal = ({ open, onClose, plan, onSave }) => {
         features: plan.features || [],
         description: plan.description || '',
         offers: plan.offers || '',
+        isActive: plan.isActive !== undefined ? plan.isActive : true,
       });
     }
   }, [plan]);

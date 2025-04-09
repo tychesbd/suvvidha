@@ -21,12 +21,18 @@ export const getSubscriptionPlans = createAsyncThunk(
 // Get vendor subscription
 export const getVendorSubscription = createAsyncThunk(
   'subscriptions/getVendorSubscription',
-  async (_, { rejectWithValue }) => {
+  async (_, thunkAPI) => {
     try {
-      const { data } = await axios.get('/api/subscriptions/vendor');
+      const token = thunkAPI.getState().auth.userInfo.token;
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const { data } = await axios.get('/api/subscriptions/vendor', config);
       return data;
     } catch (error) {
-      return rejectWithValue(
+      return thunkAPI.rejectWithValue(
         error.response && error.response.data.message
           ? error.response.data.message
           : error.message
@@ -38,12 +44,18 @@ export const getVendorSubscription = createAsyncThunk(
 // Get all subscriptions (admin only)
 export const getAllSubscriptions = createAsyncThunk(
   'subscriptions/getAll',
-  async (_, { rejectWithValue }) => {
+  async (_, thunkAPI) => {
     try {
-      const { data } = await axios.get('/api/subscriptions');
+      const token = thunkAPI.getState().auth.userInfo.token;
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const { data } = await axios.get('/api/subscriptions', config);
       return data;
     } catch (error) {
-      return rejectWithValue(
+      return thunkAPI.rejectWithValue(
         error.response && error.response.data.message
           ? error.response.data.message
           : error.message
@@ -55,12 +67,88 @@ export const getAllSubscriptions = createAsyncThunk(
 // Update subscription plan
 export const updateSubscriptionPlan = createAsyncThunk(
   'subscriptions/updatePlan',
-  async (planData, { rejectWithValue }) => {
+  async (planData, thunkAPI) => {
     try {
-      const { data } = await axios.put(`/api/subscriptions/plans/${planData.id}`, planData);
+      const token = thunkAPI.getState().auth.userInfo.token;
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      // Use planId instead of id for API endpoint
+      const { data } = await axios.put(`/api/subscriptions/plans/${planData.planId || planData.id}`, planData, config);
       return data;
     } catch (error) {
-      return rejectWithValue(
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
+// Verify subscription payment
+export const verifySubscription = createAsyncThunk(
+  'subscriptions/verify',
+  async ({ id, paymentStatus }, thunkAPI) => {
+    try {
+      const token = thunkAPI.getState().auth.userInfo.token;
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const { data } = await axios.put(`/api/subscriptions/${id}/verify`, { paymentStatus }, config);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
+// Create a new subscription plan
+export const createSubscriptionPlan = createAsyncThunk(
+  'subscriptions/createPlan',
+  async (planData, thunkAPI) => {
+    try {
+      const token = thunkAPI.getState().auth.userInfo.token;
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const { data } = await axios.post('/api/subscriptions/plans', planData, config);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
+// Create a new vendor subscription
+export const createSubscription = createAsyncThunk(
+  'subscriptions/create',
+  async (subscriptionData, thunkAPI) => {
+    try {
+      const token = thunkAPI.getState().auth.userInfo.token;
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const { data } = await axios.post('/api/subscriptions', subscriptionData, config);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
         error.response && error.response.data.message
           ? error.response.data.message
           : error.message
@@ -141,10 +229,68 @@ const subscriptionSlice = createSlice({
         state.success = true;
         // Update the plan in the plans array
         state.plans = state.plans.map(plan => 
-          plan.id === action.payload.id ? action.payload : plan
+          (plan.id === action.payload.planId || plan.planId === action.payload.planId) ? action.payload : plan
         );
       })
       .addCase(updateSubscriptionPlan.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      })
+      
+      // Create subscription plan
+      .addCase(createSubscriptionPlan.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(createSubscriptionPlan.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.plans.push(action.payload);
+      })
+      .addCase(createSubscriptionPlan.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      })
+      
+      // Verify subscription
+      .addCase(verifySubscription.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(verifySubscription.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        // Update the subscription in the subscriptions array
+        state.subscriptions = state.subscriptions.map(subscription => 
+          subscription._id === action.payload._id ? action.payload : subscription
+        );
+      })
+      .addCase(verifySubscription.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      })
+      
+      // Create subscription
+      .addCase(createSubscription.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(createSubscription.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.vendorSubscription = action.payload;
+        // Add the new subscription to the subscriptions array if it exists
+        if (state.subscriptions) {
+          state.subscriptions.push(action.payload);
+        }
+      })
+      .addCase(createSubscription.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.success = false;

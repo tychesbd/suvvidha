@@ -7,11 +7,17 @@ const {
   updatePaymentProof,
   verifySubscription,
   getSubscriptionPlans,
+  updateSubscriptionPlan,
+  createSubscriptionPlan,
 } = require('../controllers/subscriptionController');
 const { protect, admin, vendor } = require('../middleware/authMiddleware');
 
 // Public routes
 router.get('/plans', getSubscriptionPlans);
+
+// Admin routes for managing subscription plans
+router.post('/plans', protect, admin, createSubscriptionPlan);
+router.put('/plans/:id', protect, admin, updateSubscriptionPlan);
 
 // Vendor routes
 router.route('/')
