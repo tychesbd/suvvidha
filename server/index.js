@@ -38,10 +38,16 @@ app.use('/api/bookings', require('./routes/bookingRoutes'));
 app.use('/api/subscriptions', require('./routes/subscriptionRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 
-// Default route
-app.get('/', (req, res) => {
-  res.send('API is running...');
-});
+// Configure for production in production environment
+if (process.env.NODE_ENV === 'production') {
+  const configureForProduction = require('./production');
+  configureForProduction(app);
+} else {
+  // Default route for development
+  app.get('/', (req, res) => {
+    res.send('API is running...');
+  });
+}
 
 // Error handler middleware
 app.use(errorHandler);

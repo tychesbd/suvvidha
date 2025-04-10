@@ -153,14 +153,6 @@ const Login = () => {
                   </Link>
                 </Grid>
               </Grid>
-              <Box mt={5}>
-                <Typography variant="body2" color="text.secondary" align="center">
-                  Default Accounts:<br />
-                  Admin: admin@suvvidha.com / admin123<br />
-                  Vendor: vendor@suvvidha.com / vendor123<br />
-                  Customer: customer@suvvidha.com / customer123
-                </Typography>
-              </Box>
             </Box>
           </Box>
         </Grid>
