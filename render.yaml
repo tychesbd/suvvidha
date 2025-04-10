@@ -2,7 +2,12 @@ services:
   - type: web
     name: suvvidha
     env: node
-    buildCommand: npm install && npm run install-client && cd client && npm run build
+    buildCommand: |
+      export NODE_OPTIONS="--max_old_space_size=512"
+      npm ci --production=false
+      npm run install-client --production=false
+      cd client && npm run build
+      cd .. && npm prune --production
     startCommand: npm start
     envVars:
       - key: NODE_ENV
@@ -13,3 +18,5 @@ services:
         sync: false
       - key: JWT_SECRET
         sync: false
+      - key: NODE_OPTIONS
+        value: --max_old_space_size=512
