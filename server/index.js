@@ -38,10 +38,16 @@ app.use('/api/bookings', require('./routes/bookingRoutes'));
 app.use('/api/subscriptions', require('./routes/subscriptionRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 
-// Configure for production in production environment
+// Serve static files from the React app in production
 if (process.env.NODE_ENV === 'production') {
-  const configureForProduction = require('./production');
-  configureForProduction(app);
+  // Set static folder
+  const clientBuildPath = path.join(__dirname, '../client/build');
+  app.use(express.static(clientBuildPath));
+
+  // Any routes not handled by the server should be handled by React
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(clientBuildPath, 'index.html'));
+  });
 } else {
   // Default route for development
   app.get('/', (req, res) => {

@@ -42,3 +42,7 @@ Thumbs.db
 .eslintcache
 .vercel
 .netlify
+
+# Uploads directory - keep structure but ignore contents
+/server/uploads/*
+!/server/uploads/.gitkeep
