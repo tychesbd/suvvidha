@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { getDashboardStats } from '../../features/dashboard/dashboardSlice';
 
 // Material UI imports
 import { Typography, Grid, Paper, Box, Divider } from '@mui/material';
@@ -70,6 +71,13 @@ const StatsCard = ({ title, value, icon }) => {
 
 const AdminHome = () => {
   const { userInfo } = useSelector((state) => state.auth);
+  const { stats, loading, error } = useSelector((state) => state.dashboard);
+  const dispatch = useDispatch();
+
+  // Fetch dashboard stats when component mounts
+  useEffect(() => {
+    dispatch(getDashboardStats());
+  }, [dispatch]);
 
   return (
     <Box>
@@ -82,79 +90,39 @@ const AdminHome = () => {
 
       <Grid container spacing={4} sx={{ mt: 2 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Users" value="42" icon={<PeopleIcon fontSize="large" />} />
+          <StatsCard 
+            title="Users" 
+            value={loading ? '...' : stats.users.toString()} 
+            icon={<PeopleIcon fontSize="large" />} 
+          />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Bookings" value="156" icon={<CalendarTodayIcon fontSize="large" />} />
+          <StatsCard 
+            title="Bookings" 
+            value={loading ? '...' : stats.bookings.toString()} 
+            icon={<CalendarTodayIcon fontSize="large" />} 
+          />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Services" value="18" icon={<MiscellaneousServicesIcon fontSize="large" />} />
+          <StatsCard 
+            title="Services" 
+            value={loading ? '...' : stats.services.toString()} 
+            icon={<MiscellaneousServicesIcon fontSize="large" />} 
+          />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Vendors" value="12" icon={<StorefrontIcon fontSize="large" />} />
+          <StatsCard 
+            title="Vendors" 
+            value={loading ? '...' : stats.vendors.toString()} 
+            icon={<StorefrontIcon fontSize="large" />} 
+          />
         </Grid>
       </Grid>
-
-      <Typography variant="h5" sx={{ mt: 6, mb: 3 }}>
-        Recent Users
-      </Typography>
-      <Paper elevation={2} sx={{ p: 3 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={3}>
-            <Typography variant="subtitle2" color="text.secondary">
-              Name
-            </Typography>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <Typography variant="subtitle2" color="text.secondary">
-              Email
-            </Typography>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <Typography variant="subtitle2" color="text.secondary">
-              Role
-            </Typography>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <Typography variant="subtitle2" color="text.secondary">
-              Joined
-            </Typography>
-          </Grid>
-        </Grid>
-        <Divider sx={{ my: 2 }} />
-        <Typography variant="body1" color="text.secondary" align="center">
-          No recent users to display.
+      {error && (
+        <Typography variant="body2" color="error" sx={{ mt: 2 }}>
+          Error loading dashboard statistics: {error}
         </Typography>
-      </Paper>
-
-      <Typography variant="h5" sx={{ mt: 6, mb: 3 }}>
-        System Statistics
-      </Typography>
-      <Grid container spacing={3}>
-        {['Total Revenue', 'Active Products', 'Pending Orders', 'System Health'].map((item, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
-            <Paper
-              elevation={2}
-              sx={{
-                p: 2,
-                height: 150,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                bgcolor: 'background.default',
-              }}
-            >
-              <Typography variant="h6" gutterBottom>
-                {item}
-              </Typography>
-              <Typography variant="h4" color="error.main">
-                {index === 0 ? '₹45,250' : index === 1 ? '324' : index === 2 ? '18' : '98%'}
-              </Typography>
-            </Paper>
-          </Grid>
-        ))}
-      </Grid>
+      )}
     </Box>
   );
 };

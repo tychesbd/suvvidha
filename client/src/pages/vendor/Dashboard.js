@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { getVendorSubscription, createSubscription } from '../../features/subscriptions/subscriptionSlice';
 
 // Material UI imports
-import { Typography, Grid, Paper, Box } from '@mui/material';
+import { Typography, Grid, Paper, Box, CircularProgress } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 // Icons
@@ -21,6 +22,7 @@ import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import SimpleLayout from '../../components/layout/SimpleLayout';
 import SubscriptionCard from '../../components/subscription/SubscriptionCard';
+import SubscriptionPurchaseModal from '../../components/subscription/SubscriptionPurchaseModal';
 
 // Dashboard sub-pages
 import Profile from './Profile';
@@ -64,6 +66,42 @@ const StatsCard = ({ title, value, icon }) => {
 
 const VendorHome = () => {
   const { userInfo } = useSelector((state) => state.auth);
+  const { vendorSubscription, loading } = useSelector((state) => state.subscriptions);
+  const dispatch = useDispatch();
+  const [purchaseModalOpen, setPurchaseModalOpen] = useState(false);
+
+  // Fetch vendor subscription when component mounts
+  useEffect(() => {
+    dispatch(getVendorSubscription());
+  }, [dispatch]);
+  
+  const handleBuySubscription = () => {
+    setPurchaseModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setPurchaseModalOpen(false);
+  };
+
+  const handleSubmitSubscription = async (subscriptionData) => {
+    try {
+      // Dispatch action to create subscription
+      console.log('Submitting subscription:', subscriptionData);
+      await dispatch(createSubscription(subscriptionData));
+      
+      // Refresh subscription data after submission
+      dispatch(getVendorSubscription());
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Error submitting subscription:', error);
+      return Promise.reject(error);
+    }
+  };
+  
+
+
+
 
   return (
     <Box>
@@ -74,50 +112,27 @@ const VendorHome = () => {
         Manage your bookings and analytics
       </Typography>
 
-      <Grid container spacing={4} sx={{ mt: 2 }}>
-        <Grid item xs={12} sm={6} md={4}>
-          <StatsCard title="Booking" value="8" icon={<ShoppingCartIcon fontSize="large" />} />
-        </Grid>
-        <Grid item xs={12} sm={6} md={4}>
-          <StatsCard title="Revenue" value="₹12,450" icon={<AnalyticsIcon fontSize="large" />} />
-        </Grid>
-        <Grid item xs={12} sm={6} md={4}>
-          <StatsCard title="Store" value="1" icon={<StorefrontIcon fontSize="large" />} />
-        </Grid>
-      </Grid>
-
-      <Typography variant="h5" sx={{ mt: 6, mb: 3 }}>
-        Recent Bookings
-      </Typography>
-      <Paper elevation={2} sx={{ p: 3 }}>
-        <Typography variant="body1" color="text.secondary" align="center">
-          You don't have any recent bookings.
-        </Typography>
-      </Paper>
-
       <Typography variant="h5" sx={{ mt: 6, mb: 3 }}>
         Subscription Status
       </Typography>
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
-          {/* Mock subscription data - in a real app, this would come from an API */}
-          <SubscriptionCard 
-            subscription={{
-              plan: 'premium',
-              price: 4999,
-              startDate: new Date('2023-10-01'),
-              endDate: new Date('2024-04-01'),
-              status: 'active',
-              paymentStatus: 'paid',
-              features: [
-                'Premium service listing', 
-                'Dedicated customer support', 
-                'Advanced analytics', 
-                'Marketing tools', 
-                '180 days validity'
-              ]
-            }}
-            onBuyClick={() => console.log('Buy subscription clicked')}
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <SubscriptionCard 
+              subscription={vendorSubscription}
+              onBuyClick={handleBuySubscription}
+            />
+          )}
+          
+          {/* Subscription Purchase Modal */}
+          <SubscriptionPurchaseModal
+            open={purchaseModalOpen}
+            onClose={handleCloseModal}
+            onSubmit={handleSubmitSubscription}
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -202,11 +217,6 @@ const VendorDashboard = () => {
       path: '/vendor/booking',
     },
     {
-      text: 'Analytics',
-      icon: <AnalyticsIcon />,
-      path: '/vendor/analytics',
-    },
-    {
       text: 'Profile',
       icon: <PersonIcon />,
       path: '/vendor/profile',
@@ -233,11 +243,6 @@ const VendorDashboard = () => {
             {/* Lazy load the Bookings component */}
             {React.createElement(React.lazy(() => import('./Bookings')))} 
           </React.Suspense>
-        </DashboardLayout>
-      } />
-      <Route path="/analytics" element={
-        <DashboardLayout title="Vendor Dashboard" menuItems={menuItems}>
-          <Typography variant="h4">Analytics Page</Typography>
         </DashboardLayout>
       } />
       

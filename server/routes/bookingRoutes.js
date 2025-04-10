@@ -8,6 +8,7 @@ const {
   updateBookingStatus,
   assignVendor,
   cancelBooking,
+  getBookingCounts,
 } = require('../controllers/bookingController');
 const {
   getVendorBookings,
@@ -30,6 +31,9 @@ router.route('/:id/vendor-status')
 router.route('/')
   .post(protect, createBooking)
   .get(protect, getUserBookings);
+
+router.route('/counts')
+  .get(protect, getBookingCounts);
 
 router.route('/:id')
   .get(protect, getBookingById);

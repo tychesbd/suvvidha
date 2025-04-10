@@ -3,6 +3,8 @@ import {
   Box,
   Card,
   CardContent,
+  CardHeader,
+  CardActions,
   Typography,
   Button,
   Grid,
@@ -10,12 +12,14 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
+  Chip,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 const StyledCard = styled(Card)(({ theme, selected }) => ({
   height: '100%',
@@ -30,71 +34,96 @@ const StyledCard = styled(Card)(({ theme, selected }) => ({
 }));
 
 const SubscriptionPlans = ({ plans, selectedPlan, onSelectPlan }) => {
+  // Helper function to get plan ID (handles both id and planId formats)
+  const getPlanId = (plan) => plan.planId || plan.id;
+  
   return (
     <Box sx={{ mb: 4 }}>
       <Typography variant="h6" gutterBottom>
         Select a Subscription Plan
       </Typography>
-      
-      <RadioGroup
-        value={selectedPlan}
-        onChange={(e) => onSelectPlan(e.target.value)}
-      >
-        <Grid container spacing={3}>
+      <FormControl fullWidth sx={{ mb: 3 }}>
+        <InputLabel id="plan-select-label">Select Plan</InputLabel>
+        <Select
+          labelId="plan-select-label"
+          value={selectedPlan}
+          onChange={(e) => onSelectPlan(e.target.value)}
+          label="Select Plan"
+        >
           {plans.map((plan) => (
-            <Grid item xs={12} md={4} key={plan.id}>
-              <FormControlLabel
-                value={plan.id}
-                control={<Radio sx={{ display: 'none' }} />}
-                label=""
-                sx={{ m: 0, width: '100%' }}
-              >
-                <StyledCard 
-                  variant="outlined" 
-                  selected={selectedPlan === plan.id}
-                  onClick={() => onSelectPlan(plan.id)}
-                >
-                  <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                    <Typography variant="h5" component="div" gutterBottom>
-                      {plan.name}
-                    </Typography>
-                    
-                    <Typography variant="h4" color="primary" sx={{ mb: 2 }}>
-                      ₹{plan.price}
-                    </Typography>
-                    
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      Duration: {plan.duration}
-                    </Typography>
-                    
-                    <List dense sx={{ mb: 2 }}>
-                      {plan.features.map((feature, index) => (
-                        <ListItem key={index} disableGutters>
-                          <ListItemIcon sx={{ minWidth: 30 }}>
-                            <CheckCircleIcon color="success" fontSize="small" />
-                          </ListItemIcon>
-                          <ListItemText primary={feature} />
-                        </ListItem>
-                      ))}
-                    </List>
-                    
-                    <Box sx={{ mt: 'auto', textAlign: 'center' }}>
-                      <Button 
-                        variant={selectedPlan === plan.id ? "contained" : "outlined"}
-                        color="primary"
-                        fullWidth
-                        onClick={() => onSelectPlan(plan.id)}
-                      >
-                        {selectedPlan === plan.id ? "Selected" : "Select Plan"}
-                      </Button>
-                    </Box>
-                  </CardContent>
-                </StyledCard>
-              </FormControlLabel>
-            </Grid>
+            <MenuItem value={getPlanId(plan)} key={getPlanId(plan)}>
+              {plan.name} - ₹{plan.price}
+            </MenuItem>
           ))}
-        </Grid>
-      </RadioGroup>
+        </Select>
+      </FormControl>
+      <Grid container spacing={3}>
+        {plans.map((plan) => (
+          <Grid item xs={12} md={4} key={getPlanId(plan)}>
+            <Card 
+              variant="outlined" 
+              sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                borderColor: selectedPlan === getPlanId(plan) ? 'primary.main' : 'divider',
+                borderWidth: selectedPlan === getPlanId(plan) ? 2 : 1,
+                boxShadow: selectedPlan === getPlanId(plan) ? 3 : 0,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  boxShadow: 2,
+                  borderColor: 'primary.light',
+                },
+              }}
+              onClick={() => onSelectPlan(getPlanId(plan))}
+            >
+              <CardHeader
+                title={
+                  <Typography variant="h6" component="div">
+                    {plan.name}
+                  </Typography>
+                }
+                subheader={
+                  <Typography variant="h5" color="primary" sx={{ fontWeight: 'bold', mt: 1 }}>
+                    ₹{plan.price}
+                  </Typography>
+                }
+                action={
+                  <Chip 
+                    label={`Duration: ${plan.duration}`}
+                    size="small"
+                    color="secondary"
+                    sx={{ mt: 1 }}
+                  />
+                }
+              />
+              <CardContent sx={{ flexGrow: 1 }}>
+                <List dense>
+                  {plan.features.map((feature, index) => (
+                    <ListItem key={index} disableGutters>
+                      <ListItemIcon sx={{ minWidth: 36 }}>
+                        <CheckCircleOutlineIcon color="success" fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText primary={feature} />
+                    </ListItem>
+                  ))}
+                </List>
+              </CardContent>
+              <CardActions>
+                <Button 
+                  fullWidth 
+                  variant={selectedPlan === getPlanId(plan) ? "contained" : "outlined"}
+                  color="primary"
+                  size="large"
+                  onClick={() => onSelectPlan(getPlanId(plan))}
+                >
+                  {selectedPlan === getPlanId(plan) ? "Selected" : "Select Plan"}
+                </Button>
+              </CardActions>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
     </Box>
   );
 };

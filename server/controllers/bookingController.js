@@ -217,6 +217,35 @@ const cancelBooking = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Get booking counts by status for a user
+// @route   GET /api/bookings/counts
+// @access  Private
+const getBookingCounts = asyncHandler(async (req, res) => {
+  // Count active bookings (pending or in-progress)
+  const activeCount = await Booking.countDocuments({
+    user: req.user._id,
+    status: { $in: ['pending', 'in-progress'] }
+  });
+
+  // Count completed bookings
+  const completedCount = await Booking.countDocuments({
+    user: req.user._id,
+    status: 'completed'
+  });
+
+  // Count cancelled bookings
+  const cancelledCount = await Booking.countDocuments({
+    user: req.user._id,
+    status: 'cancelled'
+  });
+
+  res.json({
+    active: activeCount,
+    completed: completedCount,
+    cancelled: cancelledCount
+  });
+});
+
 module.exports = {
   createBooking,
   getAdminBookings,
@@ -225,4 +254,5 @@ module.exports = {
   updateBookingStatus,
   assignVendor,
   cancelBooking,
+  getBookingCounts,
 };

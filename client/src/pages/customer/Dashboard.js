@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { getBookingCounts } from '../../features/bookings/bookingSlice';
 
 // Material UI imports
 import { Typography, Grid, Paper, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Button } from '@mui/material';
@@ -70,6 +71,13 @@ const StatsCard = ({ title, value, icon }) => {
 
 const CustomerHome = () => {
   const { userInfo } = useSelector((state) => state.auth);
+  const { counts, loading, error } = useSelector((state) => state.bookings);
+  const dispatch = useDispatch();
+
+  // Fetch booking counts when component mounts
+  useEffect(() => {
+    dispatch(getBookingCounts());
+  }, [dispatch]);
 
   return (
     <Box>
@@ -77,148 +85,37 @@ const CustomerHome = () => {
         Welcome, {userInfo?.name}!
       </Typography>
       <Typography variant="subtitle1" color="text.secondary" paragraph>
-        Here's an overview of your activity
+        Here's an overview of your booking activity
       </Typography>
 
       <Grid container spacing={4} sx={{ mt: 2 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Active Bookings" value="3" icon={<ShoppingCartIcon fontSize="large" />} />
+        <Grid item xs={12} sm={6} md={4}>
+          <StatsCard 
+            title="Active Bookings" 
+            value={loading ? '...' : counts.active.toString()} 
+            icon={<ShoppingCartIcon fontSize="large" />} 
+          />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Completed" value="8" icon={<CheckCircleIcon fontSize="large" />} />
+        <Grid item xs={12} sm={6} md={4}>
+          <StatsCard 
+            title="Completed" 
+            value={loading ? '...' : counts.completed.toString()} 
+            icon={<CheckCircleIcon fontSize="large" />} 
+          />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Cancelled" value="2" icon={<CancelIcon fontSize="large" />} />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatsCard title="Total Spent" value="₹4,250" icon={<PaymentIcon fontSize="large" />} />
+        <Grid item xs={12} sm={6} md={4}>
+          <StatsCard 
+            title="Cancelled" 
+            value={loading ? '...' : counts.cancelled.toString()} 
+            icon={<CancelIcon fontSize="large" />} 
+          />
         </Grid>
       </Grid>
-
-      <Typography variant="h5" sx={{ mt: 6, mb: 3 }}>
-        Recent Bookings
-      </Typography>
-      <Paper elevation={2} sx={{ p: 3 }}>
-        {/* Mock booking data - in a real app, this would come from an API */}
-        {[1, 2, 3].length > 0 ? (
-          <TableContainer component={Paper} elevation={0}>
-            <Table sx={{ minWidth: 650 }} size="medium">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Booking ID</TableCell>
-                  <TableCell>Service</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Amount</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {[
-                  {
-                    id: 'BK001',
-                    service: 'Home Cleaning',
-                    date: '2023-12-15',
-                    status: 'completed',
-                    amount: 1200
-                  },
-                  {
-                    id: 'BK002',
-                    service: 'Plumbing Service',
-                    date: '2023-12-20',
-                    status: 'active',
-                    amount: 850
-                  },
-                  {
-                    id: 'BK003',
-                    service: 'Electrical Repair',
-                    date: '2023-12-25',
-                    status: 'pending',
-                    amount: 1500
-                  }
-                ].map((booking) => (
-                  <TableRow key={booking.id}>
-                    <TableCell>{booking.id}</TableCell>
-                    <TableCell>{booking.service}</TableCell>
-                    <TableCell>{new Date(booking.date).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={booking.status} 
-                        color={
-                          booking.status === 'completed' ? 'success' : 
-                          booking.status === 'active' ? 'primary' : 
-                          booking.status === 'cancelled' ? 'error' : 'warning'
-                        }
-                        size="small"
-                        sx={{ textTransform: 'capitalize' }}
-                      />
-                    </TableCell>
-                    <TableCell>₹{booking.amount}</TableCell>
-                    <TableCell>
-                      <Button size="small" variant="outlined">View</Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        ) : (
-          <Typography variant="body1" color="text.secondary" align="center">
-            You don't have any recent bookings.
-          </Typography>
-        )}
-      </Paper>
-
-      <Typography variant="h5" sx={{ mt: 6, mb: 3 }}>
-        Recommended Services
-      </Typography>
-      <Grid container spacing={3}>
-        {['Home Cleaning', 'Plumbing', 'Electrical Repair', 'Painting'].map((service, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
-            <Paper
-              elevation={2}
-              sx={{
-                p: 2,
-                height: 200,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                bgcolor: 'background.default',
-                transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-                '&:hover': {
-                  transform: 'translateY(-5px)',
-                  boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
-                  cursor: 'pointer'
-                },
-              }}
-            >
-              <Box
-                sx={{
-                  width: 80,
-                  height: 80,
-                  bgcolor: 'primary.light',
-                  mb: 2,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  color: 'white'
-                }}
-              >
-                {index === 0 && <CleaningServicesIcon />}
-                {index === 1 && <PlumbingIcon />}
-                {index === 2 && <ElectricalServicesIcon />}
-                {index === 3 && <FormatPaintIcon />}
-              </Box>
-              <Typography variant="subtitle1">{service}</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Starting from ₹{(index + 5) * 100}
-              </Typography>
-            </Paper>
-          </Grid>
-        ))}
-      </Grid>
+      {error && (
+        <Typography variant="body2" color="error" sx={{ mt: 2 }}>
+          Error loading booking counts: {error}
+        </Typography>
+      )}
     </Box>
   );
 };
