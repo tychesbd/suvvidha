@@ -54,6 +54,21 @@ If you encounter issues during deployment:
 2. Verify that all environment variables are correctly set
 3. Ensure your MongoDB connection string is correct and the database is accessible
 
+#### Memory Issues During Build
+
+If you see errors like `npm install` being killed during the build process, this is likely due to memory limitations on Render's free tier. The application has been configured to handle this by:
+
+- Setting `NODE_OPTIONS="--max_old_space_size=512"` to limit Node.js memory usage
+- Using `npm ci` instead of `npm install` for more efficient installation
+- Splitting the build process into smaller steps
+- Pruning development dependencies after build
+
+If you still encounter memory issues:
+
+1. Consider upgrading to a paid Render tier with more resources
+2. Try deploying the frontend and backend as separate services
+3. Reduce the size of your node_modules by removing unnecessary dependencies
+
 ### Local Development
 
 To run the application locally:
