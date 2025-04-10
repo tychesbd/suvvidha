@@ -9,14 +9,9 @@ import { styled } from '@mui/material/styles';
 
 // Icons
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import InventoryIcon from '@mui/icons-material/Inventory';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import AnalyticsIcon from '@mui/icons-material/Analytics';
 import PersonIcon from '@mui/icons-material/Person';
-import StorefrontIcon from '@mui/icons-material/Storefront';
-import HomeIcon from '@mui/icons-material/Home';
-import InfoIcon from '@mui/icons-material/Info';
-import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices';
+
 
 // Components
 import DashboardLayout from '../../components/layout/DashboardLayout';
