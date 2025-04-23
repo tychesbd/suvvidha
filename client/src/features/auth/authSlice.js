@@ -87,30 +87,28 @@ export const updateProfile = createAsyncThunk(
         }
       }
       
-      // Make the API request with proper error handling
-      try {
-        const response = await axios.put('/api/users/profile', userData, config);
-        
-        if (response.data) {
-          localStorage.setItem('userInfo', JSON.stringify(response.data));
-        }
-        
-        return response.data;
-      } catch (apiError) {
-        console.error('API Error:', apiError);
-        if (apiError.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          console.error('Response data:', apiError.response.data);
-          console.error('Response status:', apiError.response.status);
-          console.error('Response headers:', apiError.response.headers);
-        } else if (apiError.request) {
-          // The request was made but no response was received
-          console.error('Request made but no response received:', apiError.request);
-        }
-        throw apiError;
+      // Make the API request with simplified error handling
+      const response = await axios.put('/api/users/profile', userData, config);
+      
+      // Ensure we have response data before proceeding
+      if (!response.data) {
+        throw new Error('No data received from server');
       }
+      
+      // Make sure the token is properly included in the response data
+      // If the server didn't return a token, use the existing one
+      const responseWithToken = {
+        ...response.data,
+        token: response.data.token || token
+      };
+      
+      // Update localStorage immediately with the complete data including token
+      localStorage.setItem('userInfo', JSON.stringify(responseWithToken));
+      
+      console.log('Profile updated successfully:', responseWithToken);
+      return responseWithToken;
     } catch (error) {
+      console.error('Profile update error:', error);
       const message =
         (error.response && error.response.data && error.response.data.message) ||
         error.message ||
@@ -196,6 +194,9 @@ export const authSlice = createSlice({
         state.isLoading = false;
         state.isSuccess = true;
         state.userInfo = action.payload;
+        // Ensure updated user info is saved to localStorage with the token
+        // This is redundant since we already save it in the thunk, but keeping it for safety
+        localStorage.setItem('userInfo', JSON.stringify(action.payload));
       })
       .addCase(updateProfile.rejected, (state, action) => {
         state.isLoading = false;
