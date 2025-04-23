@@ -195,7 +195,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       pincode: updatedUser.pincode,
       profileImage: updatedUser.profileImage,
       isActive: updatedUser.isActive,
-      token: generateToken(updatedUser._id),
+      token: generateToken(updatedUser._id), // Generate a fresh token
     };
     
     // Add vendor-specific fields to response if user is a vendor
